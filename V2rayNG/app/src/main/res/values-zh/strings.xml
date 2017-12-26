@@ -70,12 +70,18 @@
     <string name="title_pref_mux_enabled">开启Mux多路复用</string>
     <string name="summary_pref_mux_enabled">开启可能会加速,关闭可能会减少断流</string>
 
+    <string name="title_pref_routing">路由</string>
+    <string name="summary_pref_routing">自定义路由</string>
+
     <string name="title_pref_donate">捐赠</string>
     <string name="summary_pref_donate">支持开发者</string>
     <string name="donate_detail">陆续增加一些试验性的进阶功能</string>
 
     <string name="title_pref_remote_dns">远程DNS</string>
     <string name="summary_pref_remote_dns">远程DNS</string>
+
+    <string name="title_pref_speedup_domain">加速域名解析</string>
+    <string name="summary_pref_speedup_domain">直连解析,可能存在问题,http/tls有效</string>
 
     <string name="title_pref_feedback">反馈</string>
     <string name="summary_pref_feedback">反馈改进或漏洞至 GitHub</string>
@@ -95,8 +101,23 @@
     <string name="tasker_start_service">启动服务</string>
     <string name="tasker_setting_confirm">确定</string>
 
+    <string name="routing_settings_title">路由设置</string>
+    <string name="routing_settings_tips">用逗号(,)隔开,可以一行多个,记得保存</string>
+    <string name="routing_settings_save">保存</string>
+    <string name="routing_settings_delete">清空</string>
+    <string name="routing_settings_scan_replace">扫描并替换</string>
+    <string name="routing_settings_scan_append">扫描并追加</string>
+
     <string-array name="share_method">
         <item>二维码</item>
         <item>导出至剪贴板</item>
     </string-array>
+
+    <string-array name="routing_tag">
+        <item>代理的网址或IP</item>
+        <item>直连的网址或IP</item>
+        <item>阻止的网址或IP</item>
+    </string-array>
+
+
 </resources>

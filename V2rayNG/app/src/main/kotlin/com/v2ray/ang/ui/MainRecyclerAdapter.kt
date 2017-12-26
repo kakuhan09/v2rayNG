@@ -6,8 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.AngConfig
-import com.v2ray.ang.extension.alertView
-import com.v2ray.ang.extension.selector
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.item_qrcode.view.*
@@ -61,15 +59,20 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
             }
 
             holder.layout_share.setOnClickListener {
-                mActivity.selector(null, share_method.asList()) { i ->
+                mActivity.selector(null, share_method.asList()) { dialogInterface, i ->
                     try {
                         when (i) {
                             0 -> {
                                 val iv = mActivity.layoutInflater.inflate(R.layout.item_qrcode, null)
                                 iv.iv_qcode.setImageBitmap(AngConfigManager.share2QRCode(position))
-                                mActivity.alertView("", iv) {
-                                    show()
-                                }
+
+                                mActivity.alert {
+                                    customView {
+                                        linearLayout {
+                                            addView(iv)
+                                        }
+                                    }
+                                }.show()
                             }
                             1 -> {
                                 if (AngConfigManager.share2Clipboard(position) == 0) {

@@ -10,7 +10,6 @@ import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
-import com.v2ray.ang.extension.alert
 import kotlinx.android.synthetic.main.activity_server2.*
 import org.jetbrains.anko.*
 

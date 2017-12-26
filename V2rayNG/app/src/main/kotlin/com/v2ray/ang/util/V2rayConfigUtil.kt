@@ -1,6 +1,7 @@
 package com.v2ray.ang.util
 
 import android.text.TextUtils
+import android.util.Log
 import com.google.gson.Gson
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
@@ -80,6 +81,9 @@ object V2rayConfigUtil {
                 }""")
         )
     }
+    private val ruleDirectDnsObj: JSONObject by lazy {
+        JSONObject("""{"type":"field","port":53,"network":"udp","outboundTag":"direct"}""")
+    }
 
     data class Result(var status: Boolean, var content: String)
 
@@ -102,6 +106,7 @@ object V2rayConfigUtil {
             } else if (config.vmess[config.index].configType == 2) {
                 result = getV2rayConfigType2(app, config)
             }
+            Log.d("V2rayConfigUtil", result.content)
             return result
         } catch (e: Exception) {
             e.printStackTrace()
@@ -139,13 +144,13 @@ object V2rayConfigUtil {
             outbound(config, v2rayConfig)
 
             //routing
-            routing(config, v2rayConfig)
+            routing(config, v2rayConfig, app)
 
             //dns
             customDns(config, v2rayConfig, app)
 
             //增加lib2ray
-            val finalConfig = addLib2ray(v2rayConfig)
+            val finalConfig = addLib2ray(v2rayConfig, app)
 
             result.status = true
             result.content = finalConfig
@@ -292,9 +297,12 @@ object V2rayConfigUtil {
     /**
      * routing
      */
-    private fun routing(config: AngConfig, v2rayConfig: V2rayConfig): Boolean {
+    private fun routing(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
-            //绕过大陆网址
+            routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_AGENT, ""), AppConfig.TAG_AGENT, v2rayConfig)
+            routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_DIRECT, ""), AppConfig.TAG_DIRECT, v2rayConfig)
+            routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_BLOCKED, ""), AppConfig.TAG_BLOCKED, v2rayConfig)
+
             if (config.bypassMainland) {
 //                val rulesItem1 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
 //                rulesItem1.type = "chinasites"
@@ -330,6 +338,44 @@ object V2rayConfigUtil {
         return true
     }
 
+    private fun routingUserRule(userRule: String, tag: String, v2rayConfig: V2rayConfig) {
+        try {
+            if (!TextUtils.isEmpty(userRule)) {
+                //Domain
+                val rulesDomain = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                rulesDomain.type = "field"
+                rulesDomain.outboundTag = tag
+                rulesDomain.domain = ArrayList<String>()
+
+                //IP
+                val rulesIP = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                rulesIP.type = "field"
+                rulesIP.outboundTag = tag
+                rulesIP.ip = ArrayList<String>()
+
+                userRule
+                        .split(",")
+                        .forEach {
+                            if (Utils.isIpAddress(it)) {
+                                rulesIP.ip?.add(it)
+                            } else if (Utils.isValidUrl(it)) {
+                                rulesDomain.domain?.add(it)
+                            }
+                        }
+                if (rulesDomain.domain?.size!! > 0) {
+                    v2rayConfig.routing.settings.rules.add(rulesDomain)
+                }
+                if (rulesIP.ip?.size!! > 0) {
+                    v2rayConfig.routing.settings.rules.add(rulesIP)
+                }
+            }
+
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     /**
      * Custom Dns
      */
@@ -347,11 +393,20 @@ object V2rayConfigUtil {
     /**
      * 增加lib2ray
      */
-    private fun addLib2ray(v2rayConfig: V2rayConfig): String {
+    private fun addLib2ray(v2rayConfig: V2rayConfig, app: AngApplication): String {
         try {
             val conf = Gson().toJson(v2rayConfig)
             val jObj = JSONObject(conf)
             jObj.put("#lib2ray", lib2rayObj)
+
+            val speedupDomain = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_SPEEDUP_DOMAIN, false)
+            if (speedupDomain) {
+                jObj.optJSONObject("routing")
+                        .optJSONObject("settings")
+                        .optJSONArray("rules")
+                        .put(0, ruleDirectDnsObj)
+            }
+
             return jObj.toString()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -375,11 +430,13 @@ object V2rayConfigUtil {
                     }
         }
 
-        if (!ret.contains("8.8.8.8")) {
-            ret.add("8.8.8.8")
-        }
-        if (!ret.contains("8.8.4.4")) {
-            ret.add("8.8.4.4")
+        if (ret.size <= 0) {
+            if (!ret.contains("8.8.8.8")) {
+                ret.add("8.8.8.8")
+            }
+            if (!ret.contains("8.8.4.4")) {
+                ret.add("8.8.4.4")
+            }
         }
         if (!ret.contains("localhost")) {
             ret.add("localhost")

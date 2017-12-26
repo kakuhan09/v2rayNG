@@ -24,10 +24,14 @@ import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
 import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.Utils
+import kotlinx.android.synthetic.main.activity_main.*
 import libv2ray.Libv2ray
 import libv2ray.V2RayCallbacks
 import libv2ray.V2RayVPNServiceSupportsSet
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
 import java.lang.ref.SoftReference
+import java.util.concurrent.TimeUnit
 
 class V2RayVpnService : VpnService() {
     companion object {
@@ -202,8 +206,14 @@ class V2RayVpnService : VpnService() {
     }
 
     private fun restartV2Ray() {
-        stopV2Ray(false)
-        startV2ray(true)
+        try {
+            stopV2Ray(false)
+            Observable.timer(1, TimeUnit.SECONDS)
+                    .subscribe {
+                        startV2ray(true)
+                    }
+        } catch (e: Exception) {
+        }
     }
 
     private fun restartV2RaySoft() {
@@ -239,7 +249,7 @@ class V2RayVpnService : VpnService() {
                 }
 
         val notification = NotificationCompat.Builder(applicationContext, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_v)
                 .setContentTitle(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
                 .setContentText(getString(R.string.notification_action_more))
                 .setPriority(NotificationCompat.PRIORITY_MIN)

@@ -25,9 +25,11 @@ class SettingsActivity : BaseActivity() {
         const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
         const val PREF_MUX_ENABLED = "pref_mux_enabled"
         const val PREF_REMOTE_DNS = "pref_remote_dns"
+        const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
 
+        const val PREF_ROUTING = "pref_routing"
         const val PREF_DONATE = "pref_donate"
-//        const val PREF_LICENSES = "pref_licenses"
+        //        const val PREF_LICENSES = "pref_licenses"
         const val PREF_FEEDBACK = "pref_feedback"
         const val PREF_VERSION = "pref_version"
         //        const val PREF_AUTO_RESTART = "pref_auto_restart"
@@ -45,8 +47,9 @@ class SettingsActivity : BaseActivity() {
         //        val autoRestart by lazy { findPreference(PREF_AUTO_RESTART) as CheckBoxPreference }
         val remoteDns by lazy { findPreference(PREF_REMOTE_DNS) as EditTextPreference }
 
+        val routing: Preference by lazy { findPreference(PREF_ROUTING) }
         val donate: Preference by lazy { findPreference(PREF_DONATE) }
-//        val licenses: Preference by lazy { findPreference(PREF_LICENSES) }
+        //        val licenses: Preference by lazy { findPreference(PREF_LICENSES) }
         val feedback: Preference by lazy { findPreference(PREF_FEEDBACK) }
         val version: Preference by lazy { findPreference(PREF_VERSION) }
 
@@ -54,8 +57,12 @@ class SettingsActivity : BaseActivity() {
             super.onCreate(savedInstanceState)
             addPreferencesFromResource(R.xml.pref_settings)
 
+            routing.onClick {
+                startActivity<RoutingSettingsActivity>()
+            }
+
             donate.onClick {
-                donate()
+                startActivity<InappBuyActivity>()
             }
 
 //            licenses.onClick {
@@ -113,9 +120,7 @@ class SettingsActivity : BaseActivity() {
             startActivity(Intent(Intent.ACTION_VIEW, uri))
         }
 
-        private fun donate() {
-            startActivity<InappBuyActivity>()
-        }
+
     }
 
 }

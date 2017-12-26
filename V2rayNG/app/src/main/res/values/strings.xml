@@ -71,12 +71,18 @@
     <string name="title_pref_mux_enabled">Enable Mux</string>
     <string name="summary_pref_mux_enabled">Enable maybe speed up network and switch network maybe flash</string>
 
+    <string name="title_pref_routing">Routing</string>
+    <string name="summary_pref_routing">Custom routing</string>
+
     <string name="title_pref_donate">Donate</string>
     <string name="summary_pref_donate">Donate developer</string>
     <string name="donate_detail">Add some experimental advanced features</string>
 
     <string name="title_pref_remote_dns">Remote DNS</string>
     <string name="summary_pref_remote_dns">Remote DNS</string>
+
+    <string name="title_pref_speedup_domain">Speedup domain name resolution</string>
+    <string name="summary_pref_speedup_domain">Valid only for http/tls</string>
 
     <string name="title_pref_feedback">Feedback</string>
     <string name="summary_pref_feedback">Feedback enhancements or bugs to GitHub</string>
@@ -96,8 +102,21 @@
     <string name="tasker_start_service">Start Service</string>
     <string name="tasker_setting_confirm">Confirm</string>
 
+    <string name="routing_settings_title">Routing Settings</string>
+    <string name="routing_settings_tips">Separated by commas(,),remember to save</string>
+    <string name="routing_settings_save">Save</string>
+    <string name="routing_settings_delete">Clear</string>
+    <string name="routing_settings_scan_replace">Scan and replace</string>
+    <string name="routing_settings_scan_append">Scan and append</string>
+
     <string-array name="share_method">
         <item>QRcode</item>
         <item>Export to clipboard</item>
+    </string-array>
+
+    <string-array name="routing_tag">
+        <item>proxy URL or IP</item>
+        <item>direct URL or IP</item>
+        <item>blocked URL or IP</item>
     </string-array>
 </resources>

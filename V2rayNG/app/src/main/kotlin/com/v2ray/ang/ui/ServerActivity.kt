@@ -9,7 +9,6 @@ import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.activity_server.*
-import com.v2ray.ang.extension.alert
 import org.jetbrains.anko.*
 
 

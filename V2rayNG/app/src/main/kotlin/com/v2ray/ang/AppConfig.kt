@@ -16,9 +16,16 @@ object AppConfig {
     const val BROADCAST_ACTION_WIDGET_CLICK = "com.v2ray.ang.action.widget.click"
 
     const val TASKER_EXTRA_BUNDLE = "com.twofortyfouram.locale.intent.extra.BUNDLE"
-    const val TASKER_EXTRA_STRING_BLURB = "com.twofortyfouram.locale.intent.extra.BLURB";
+    const val TASKER_EXTRA_STRING_BLURB = "com.twofortyfouram.locale.intent.extra.BLURB"
     const val TASKER_EXTRA_BUNDLE_SWITCH = "tasker_extra_bundle_switch"
     const val TASKER_EXTRA_BUNDLE_GUID = "tasker_extra_bundle_guid"
+
+    const val PREF_V2RAY_ROUTING_AGENT = "pref_v2ray_routing_agent"
+    const val PREF_V2RAY_ROUTING_DIRECT = "pref_v2ray_routing_direct"
+    const val PREF_V2RAY_ROUTING_BLOCKED = "pref_v2ray_routing_blocked"
+    const val TAG_AGENT = "agentout"
+    const val TAG_DIRECT = "direct"
+    const val TAG_BLOCKED = "blockout"
 
     const val MSG_REGISTER_CLIENT = 1
     const val MSG_STATE_RUNNING = 11

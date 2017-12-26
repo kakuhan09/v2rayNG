@@ -47,6 +47,9 @@
         <activity android:name=".ui.ScannerActivity" />
         <activity android:name="com.v2ray.ang.InappBuyActivity" />
         <activity android:name=".ui.LogcatActivity" />
+        <activity
+            android:name=".ui.RoutingSettingsActivity"
+            android:windowSoftInputMode="stateUnchanged" />
 
 
         <service

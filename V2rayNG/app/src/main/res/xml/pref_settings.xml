@@ -22,9 +22,19 @@
             android:summary="@string/summary_pref_remote_dns"
             android:title="@string/title_pref_remote_dns" />
 
+        <CheckBoxPreference
+            android:key="pref_speedup_domain"
+            android:summary="@string/summary_pref_speedup_domain"
+            android:title="@string/title_pref_speedup_domain" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/title_advanced">
+        <Preference
+            android:key="pref_routing"
+            android:summary="@string/summary_pref_routing"
+            android:title="@string/title_pref_routing" />
+
         <Preference
             android:key="pref_donate"
             android:summary="@string/summary_pref_donate"
@@ -34,8 +44,8 @@
 
     <PreferenceCategory android:title="@string/title_about">
         <!--<Preference-->
-            <!--android:key="pref_licenses"-->
-            <!--android:title="@string/notices_title" />-->
+        <!--android:key="pref_licenses"-->
+        <!--android:title="@string/notices_title" />-->
 
         <Preference
             android:key="pref_feedback"

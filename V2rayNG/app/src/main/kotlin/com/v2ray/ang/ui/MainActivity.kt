@@ -22,6 +22,9 @@ import org.jetbrains.anko.*
 import java.lang.ref.SoftReference
 import java.net.URL
 import android.content.IntentFilter
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 
 class MainActivity : BaseActivity() {
     companion object {
@@ -31,12 +34,13 @@ class MainActivity : BaseActivity() {
         private const val REQUEST_SCAN_URL = 3
     }
 
-    var fabChecked = false
+    var isRunning = false
         set(value) {
             field = value
             adapter.changeable = !value
             if (value) {
                 fab.imageResource = R.drawable.ic_start_connected
+                hideCircle()
             } else {
                 fab.imageResource = R.drawable.ic_start_idle
             }
@@ -49,7 +53,7 @@ class MainActivity : BaseActivity() {
         setContentView(R.layout.activity_main)
 
         fab.setOnClickListener {
-            if (fabChecked) {
+            if (isRunning) {
                 Utils.stopVService(this)
             } else {
                 val intent = VpnService.prepare(this)
@@ -66,13 +70,15 @@ class MainActivity : BaseActivity() {
     }
 
     fun startV2Ray() {
+        fabProgressCircle?.show()
+
         toast(R.string.toast_services_start)
         Utils.startVService(this)
     }
 
     override fun onStart() {
         super.onStart()
-        fabChecked = false
+        isRunning = false
 
 //        val intent = Intent(this.applicationContext, V2RayVpnService::class.java)
 //        intent.`package` = AppConfig.ANG_PACKAGE
@@ -138,7 +144,7 @@ class MainActivity : BaseActivity() {
             true
         }
         R.id.import_manually -> {
-            startActivity<ServerActivity>("position" to -1, "isRunning" to fabChecked)
+            startActivity<ServerActivity>("position" to -1, "isRunning" to isRunning)
             adapter.updateConfigList()
             true
         }
@@ -155,7 +161,7 @@ class MainActivity : BaseActivity() {
             true
         }
         R.id.settings -> {
-            startActivity<SettingsActivity>("isRunning" to fabChecked)
+            startActivity<SettingsActivity>("isRunning" to isRunning)
             true
         }
         R.id.logcat -> {
@@ -337,21 +343,21 @@ class MainActivity : BaseActivity() {
             val activity = mReference.get()
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
-                    activity?.fabChecked = true
+                    activity?.isRunning = true
                 }
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
-                    activity?.fabChecked = false
+                    activity?.isRunning = false
                 }
                 AppConfig.MSG_STATE_START_SUCCESS -> {
                     activity?.toast(R.string.toast_services_success)
-                    activity?.fabChecked = true
+                    activity?.isRunning = true
                 }
                 AppConfig.MSG_STATE_START_FAILURE -> {
                     activity?.toast(R.string.toast_services_failure)
-                    activity?.fabChecked = false
+                    activity?.isRunning = false
                 }
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
-                    activity?.fabChecked = false
+                    activity?.isRunning = false
                 }
             }
         }
@@ -363,5 +369,18 @@ class MainActivity : BaseActivity() {
             return true
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    fun hideCircle() {
+        try {
+            Observable.timer(1, TimeUnit.SECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        if (fabProgressCircle.isShown) {
+                            fabProgressCircle.hide()
+                        }
+                    }
+        } catch (e: Exception) {
+        }
     }
 }

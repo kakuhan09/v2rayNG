@@ -10,7 +10,10 @@
       "auth": "noauth",
       "udp": true
     },
-    "domainOverride": ["http", "tls"]
+    "domainOverride": [
+      "http",
+      "tls"
+    ]
   },
   "outbound": {
     "tag": "agentout",
@@ -42,6 +45,15 @@
       "protocol": "freedom",
       "settings": {},
       "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "blockout",
+      "settings": {
+        "response": {
+          "type": "http"
+        }
+      }
     }
   ],
   "dns": {
@@ -56,6 +68,15 @@
     "settings": {
       "domainStrategy": "IPIfNonMatch",
       "rules": [
+        {
+          "type": "field",
+          "domain": [
+          ],
+          "ip": [
+            "0.0.0.0/8"
+          ],
+          "outboundTag": "direct"
+        },
         {
           "type": "field",
           "domain": [
