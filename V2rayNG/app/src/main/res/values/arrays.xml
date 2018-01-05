@@ -37,4 +37,11 @@
         <item></item>
         <item>tls</item>
     </string-array>
+
+    <string-array name="routing_mode_value" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
 </resources>

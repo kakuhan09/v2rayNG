@@ -20,13 +20,14 @@ import org.jetbrains.anko.startActivity
 
 class SettingsActivity : BaseActivity() {
     companion object {
-        const val PREF_BYPASS_MAINLAND = "pref_bypass_mainland"
+        //        const val PREF_BYPASS_MAINLAND = "pref_bypass_mainland"
         //        const val PREF_START_ON_BOOT = "pref_start_on_boot"
         const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
         const val PREF_MUX_ENABLED = "pref_mux_enabled"
         const val PREF_REMOTE_DNS = "pref_remote_dns"
         const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
 
+        const val PREF_ROUTING_MODE = "pref_routing_mode"
         const val PREF_ROUTING = "pref_routing"
         const val PREF_DONATE = "pref_donate"
         //        const val PREF_LICENSES = "pref_licenses"

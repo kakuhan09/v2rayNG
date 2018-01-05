@@ -141,7 +141,7 @@ object V2rayConfigUtil {
 //            }
 
             //vmess协议服务器配置
-            outbound(config, v2rayConfig)
+            outbound(config, v2rayConfig, app)
 
             //routing
             routing(config, v2rayConfig, app)
@@ -195,7 +195,7 @@ object V2rayConfigUtil {
     /**
      * vmess协议服务器配置
      */
-    private fun outbound(config: AngConfig, v2rayConfig: V2rayConfig): Boolean {
+    private fun outbound(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
             val vmess = config.vmess[config.index]
             v2rayConfig.outbound.settings.vnext[0].address = vmess.address
@@ -206,7 +206,8 @@ object V2rayConfigUtil {
             v2rayConfig.outbound.settings.vnext[0].users[0].security = vmess.security
 
             //Mux
-            v2rayConfig.outbound.mux.enabled = config.muxEnabled
+            val muxEnabled = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
+            v2rayConfig.outbound.mux.enabled = muxEnabled
 
             //远程服务器底层传输配置
             v2rayConfig.outbound.streamSettings = boundStreamSettings(config)
@@ -303,39 +304,65 @@ object V2rayConfigUtil {
             routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_DIRECT, ""), AppConfig.TAG_DIRECT, v2rayConfig)
             routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_BLOCKED, ""), AppConfig.TAG_BLOCKED, v2rayConfig)
 
-            if (config.bypassMainland) {
-//                val rulesItem1 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
-//                rulesItem1.type = "chinasites"
-//                rulesItem1.outboundTag = "direct"
-//                v2rayConfig.routing.settings.rules.add(rulesItem1)
-//
-//                val rulesItem2 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
-//                rulesItem2.type = "chinaip"
-//                rulesItem2.outboundTag = "direct"
-//                v2rayConfig.routing.settings.rules.add(rulesItem2)
+            val routingMode = app.defaultDPreference.getPrefString(SettingsActivity.PREF_ROUTING_MODE, "0")
+            when (routingMode) {
+                "0" -> {
+                }
+                "1" -> {
+                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+                }
+                "2" -> {
+                    routingGeo("", "custom:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
+                    routingGeo("", "surge:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
 
-//                v2rayConfig.routing.settings.rules[0].domain?.add("geosite:cn")
-//                v2rayConfig.routing.settings.rules[0].ip?.add("geoip:cn")
+                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
 
-                val rulesItem1 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
-                rulesItem1.type = "field"
-                rulesItem1.outboundTag = "direct"
-                rulesItem1.domain = ArrayList<String>()
-                rulesItem1.domain?.add("geosite:cn")
-                v2rayConfig.routing.settings.rules.add(rulesItem1)
-
-                val rulesItem2 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
-                rulesItem2.type = "field"
-                rulesItem2.outboundTag = "direct"
-                rulesItem2.ip = ArrayList<String>()
-                rulesItem2.ip?.add("geoip:cn")
-                v2rayConfig.routing.settings.rules.add(rulesItem2)
+                    routingGeo("", "custom:proxy", AppConfig.TAG_AGENT, v2rayConfig)
+                    routingGeo("", "surge:proxy", AppConfig.TAG_AGENT, v2rayConfig)
+                    routingGeo("domain", "gfwlist:proxy", AppConfig.TAG_AGENT, v2rayConfig)
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
             return false
         }
         return true
+    }
+
+    private fun routingGeo(ipOrDomain: String, code: String, tag: String, v2rayConfig: V2rayConfig) {
+        try {
+            if (!TextUtils.isEmpty(code)) {
+                //IP
+                if (ipOrDomain == "ip" || ipOrDomain == "") {
+                    val rulesIP = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                    rulesIP.type = "field"
+                    rulesIP.outboundTag = tag
+                    rulesIP.ip = ArrayList<String>()
+                    rulesIP.ip?.add("geoip:$code")
+                    v2rayConfig.routing.settings.rules.add(rulesIP)
+                }
+
+                if (ipOrDomain == "domain" || ipOrDomain == "") {
+                    //Domain
+                    val rulesDomain = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                    rulesDomain.type = "field"
+                    rulesDomain.outboundTag = tag
+                    rulesDomain.domain = ArrayList<String>()
+                    rulesDomain.domain?.add("geosite:$code")
+                    v2rayConfig.routing.settings.rules.add(rulesDomain)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun routingUserRule(userRule: String, tag: String, v2rayConfig: V2rayConfig) {
@@ -381,7 +408,7 @@ object V2rayConfigUtil {
      */
     private fun customDns(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
-            v2rayConfig.dns.servers = getRemoteDnsServers(app)
+            v2rayConfig.dns.servers = Utils.getRemoteDnsServers(app.defaultDPreference)
         } catch (e: Exception) {
             e.printStackTrace()
             return false
@@ -412,36 +439,6 @@ object V2rayConfigUtil {
             e.printStackTrace()
             return ""
         }
-    }
-
-    /**
-     * get remote dns servers from preference
-     */
-    private fun getRemoteDnsServers(app: AngApplication): List<out String> {
-        val ret = ArrayList<String>()
-        val remoteDns = app.defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
-        if (!TextUtils.isEmpty(remoteDns)) {
-            remoteDns
-                    .split(",")
-                    .forEach {
-                        if (Utils.isIpAddress(it)) {
-                            ret.add(it)
-                        }
-                    }
-        }
-
-        if (ret.size <= 0) {
-            if (!ret.contains("8.8.8.8")) {
-                ret.add("8.8.8.8")
-            }
-            if (!ret.contains("8.8.4.4")) {
-                ret.add("8.8.4.4")
-            }
-        }
-        if (!ret.contains("localhost")) {
-            ret.add("localhost")
-        }
-        return ret
     }
 
     /**

@@ -1,6 +1,10 @@
 package com.v2ray.ang.util;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
 import android.content.res.AssetManager;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,6 +78,37 @@ public class AssetsUtil {
         }
 
         return null;
+    }
+
+    public static String getAssetPath(Context context, String assetPath) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            context.deleteFile(assetPath);
+
+            in = context.getAssets().open(assetPath);
+            out = context.openFileOutput(assetPath, MODE_PRIVATE);
+            copyFile(in, out);
+            in.close();
+
+            String path = context.getFilesDir().toString();
+            return path + "/" + assetPath;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static void copyFile(InputStream in, OutputStream out) throws IOException {

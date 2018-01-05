@@ -134,9 +134,6 @@ object AngConfigManager {
      */
     fun genStoreV2rayConfig(): Boolean {
         try {
-            angConfig.bypassMainland = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_BYPASS_MAINLAND, false)
-            angConfig.muxEnabled = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
-
             val result = V2rayConfigUtil.getV2rayConfig(app, angConfig)
             if (result.status) {
                 app.defaultDPreference.setPrefString(PREF_CURR_CONFIG, result.content)

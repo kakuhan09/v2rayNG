@@ -61,9 +61,6 @@
     <string name="title_about">关于</string>
     <string name="title_advanced">进阶设置</string>
 
-    <string name="title_pref_bypass_mainland">绕过大陆地址</string>
-    <string name="summary_pref_bypass_mainland">绕过大陆地址</string>
-
     <string name="title_pref_per_app_proxy">分应用代理</string>
     <string name="summary_pref_per_app_proxy">分应用代理仅支持 Android 5.0 Lollipop 及更高</string>
 
@@ -119,5 +116,10 @@
         <item>阻止的网址或IP</item>
     </string-array>
 
+    <string-array name="routing_mode">
+        <item>全局</item>
+        <item>绕过大陆地址</item>
+        <item>Geo全家桶</item>
+    </string-array>
 
 </resources>

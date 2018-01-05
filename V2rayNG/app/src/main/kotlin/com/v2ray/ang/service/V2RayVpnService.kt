@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-//import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.*
 import android.support.annotation.RequiresApi
@@ -18,20 +17,16 @@ import android.support.v4.app.NotificationCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
-//import com.v2ray.ang.receiver.NetWorkStateReceiver
 import com.v2ray.ang.ui.MainActivity
 import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
+import com.v2ray.ang.util.AssetsUtil
 import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.Utils
-import kotlinx.android.synthetic.main.activity_main.*
 import libv2ray.Libv2ray
 import libv2ray.V2RayCallbacks
 import libv2ray.V2RayVPNServiceSupportsSet
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
 import java.lang.ref.SoftReference
-import java.util.concurrent.TimeUnit
 
 class V2RayVpnService : VpnService() {
     companion object {
@@ -85,9 +80,10 @@ class V2RayVpnService : VpnService() {
 
         builder.setSession(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
 
-        val dnsServers = Utils.getDnsServers()
-        for (dns in dnsServers)
+        val dnsServers = Utils.getRemoteDnsServers(defaultDPreference)
+        for (dns in dnsServers) {
             builder.addDnsServer(dns)
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
                 defaultDPreference.getPrefBoolean(SettingsActivity.PREF_PER_APP_PROXY, false)) {
@@ -171,6 +167,10 @@ class V2RayVpnService : VpnService() {
             v2rayPoint.configureFile = "V2Ray_internal/ConfigureFileContent"
             v2rayPoint.configureFileContent = configContent
 
+            //next gen tun2ray
+//            v2rayPoint.upgradeToContext()
+//            v2rayPoint.optinNextGenerationTunInterface()
+
             v2rayPoint.runLoop()
         }
 
@@ -207,11 +207,15 @@ class V2RayVpnService : VpnService() {
 
     private fun restartV2Ray() {
         try {
+            //use custom geo dat
+//            val path = AssetsUtil.getAssetPath(this, "geoip.dat")
+//            Libv2ray.setAssetsOverride("geoip.dat", path)
+//
+//            val path2 = AssetsUtil.getAssetPath(this, "geosite.dat")
+//            Libv2ray.setAssetsOverride("geosite.dat", path2)
+
             stopV2Ray(false)
-            Observable.timer(1, TimeUnit.SECONDS)
-                    .subscribe {
-                        startV2ray(true)
-                    }
+            startV2ray(true)
         } catch (e: Exception) {
         }
     }

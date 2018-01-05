@@ -13,10 +13,13 @@ import java.util.*
 import kotlin.collections.HashMap
 import android.app.ActivityManager
 import android.content.ClipData
+import android.text.TextUtils
 import android.util.Patterns
 import android.webkit.URLUtil
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.service.V2RayVpnService
+import com.v2ray.ang.ui.SettingsActivity
+import me.dozen.dpreference.DPreference
 
 object Utils {
 
@@ -105,13 +108,33 @@ object Utils {
     }
 
     /**
-     * get dns servers
+     * get remote dns servers from preference
      */
-    fun getDnsServers(): Array<out String> {
-        val ret = LinkedHashSet<String>()
-        ret.add("8.8.8.8")
-        ret.add("8.8.4.4")
-        return ret.toTypedArray()
+    fun getRemoteDnsServers(defaultDPreference: DPreference): List<String> {
+        val remoteDns = defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
+        val ret = ArrayList<String>()
+        if (!TextUtils.isEmpty(remoteDns)) {
+            remoteDns
+                    .split(",")
+                    .forEach {
+                        if (Utils.isIpAddress(it)) {
+                            ret.add(it)
+                        }
+                    }
+        }
+
+        if (ret.size <= 0) {
+            if (!ret.contains("8.8.8.8")) {
+                ret.add("8.8.8.8")
+            }
+            if (!ret.contains("8.8.4.4")) {
+                ret.add("8.8.4.4")
+            }
+        }
+//        if (!ret.contains("localhost")) {
+//            ret.add("localhost")
+//        }
+        return ret
     }
 
     /**
