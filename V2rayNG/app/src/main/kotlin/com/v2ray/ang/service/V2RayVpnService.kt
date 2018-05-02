@@ -36,7 +36,11 @@ class V2RayVpnService : VpnService() {
 
         fun startV2Ray(context: Context) {
             val intent = Intent(context.applicationContext, V2RayVpnService::class.java)
-            context.startService(intent)
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
         }
     }
 
@@ -130,9 +134,10 @@ class V2RayVpnService : VpnService() {
         v2rayPoint.vpnSupportReady()
         if (v2rayPoint.isRunning) {
             MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_SUCCESS, "")
-            showNotification()
+//            showNotification()
         } else {
             MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_FAILURE, "")
+            cancelNotification()
         }
     }
 
@@ -174,7 +179,7 @@ class V2RayVpnService : VpnService() {
             v2rayPoint.runLoop()
         }
 
-        //  showNotification()
+        showNotification()
     }
 
     private fun stopV2Ray(isForced: Boolean = true) {

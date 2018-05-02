@@ -38,10 +38,10 @@ class WidgetProvider : AppWidgetProvider() {
 
             val isRunning = Utils.isServiceRun(context, "com.v2ray.ang.service.V2RayVpnService")
             if (isRunning) {
-                context.toast(R.string.toast_services_stop)
+//                context.toast(R.string.toast_services_stop)
                 Utils.stopVService(context)
             } else {
-                context.toast(R.string.toast_services_start)
+//                context.toast(R.string.toast_services_start)
                 Utils.startVService(context)
             }
         }

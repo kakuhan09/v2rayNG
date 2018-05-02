@@ -13,6 +13,7 @@ import com.v2ray.ang.InappBuyActivity
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.extension.onClick
+import com.v2ray.ang.util.Utils
 import libv2ray.Libv2ray
 import org.jetbrains.anko.act
 import org.jetbrains.anko.defaultSharedPreferences
@@ -25,7 +26,7 @@ class SettingsActivity : BaseActivity() {
         const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
         const val PREF_MUX_ENABLED = "pref_mux_enabled"
         const val PREF_REMOTE_DNS = "pref_remote_dns"
-        const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
+//        const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
 
         const val PREF_ROUTING_MODE = "pref_routing_mode"
         const val PREF_ROUTING = "pref_routing"
@@ -75,7 +76,7 @@ class SettingsActivity : BaseActivity() {
 //            }
 
             feedback.onClick {
-                openUri("https://github.com/2dust/v2rayNG/issues")
+                Utils.openUri(activity, "https://github.com/2dust/v2rayNG/issues")
             }
 
             perAppProxy.setOnPreferenceClickListener {
@@ -115,13 +116,6 @@ class SettingsActivity : BaseActivity() {
                     act.defaultDPreference.setPrefBoolean(key, sharedPreferences.getBoolean(key, false))
             }
         }
-
-        private fun openUri(uriString: String) {
-            val uri = Uri.parse(uriString)
-            startActivity(Intent(Intent.ACTION_VIEW, uri))
-        }
-
-
     }
 
 }

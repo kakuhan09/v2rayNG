@@ -9,6 +9,7 @@ import java.util.ArrayList
 import com.v2ray.ang.R
 import com.v2ray.ang.util.AngConfigManager
 import android.content.Intent
+import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
 import com.google.zxing.WriterException
@@ -19,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_tasker.*
 class TaskerActivity : BaseActivity() {
     private var listview: ListView? = null
     private var lstData: ArrayList<String> = ArrayList()
+    private var lstGuid: ArrayList<String> = ArrayList()
     private val vmess = AngConfigManager.configs.vmess
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +29,7 @@ class TaskerActivity : BaseActivity() {
 
         vmess.forEach {
             lstData.add(it.remarks)
+            lstGuid.add(it.guid)
         }
         val adapter = ArrayAdapter(this,
                 android.R.layout.simple_list_item_single_choice, lstData)
@@ -42,10 +45,14 @@ class TaskerActivity : BaseActivity() {
             val switch = bundle?.getBoolean(AppConfig.TASKER_EXTRA_BUNDLE_SWITCH, false)
             val guid = bundle?.getString(AppConfig.TASKER_EXTRA_BUNDLE_GUID, "")
 
-            if (switch == null || guid == null) {
+            if (switch == null || TextUtils.isEmpty(guid)) {
                 return
             } else {
                 switch_start_service.isChecked = switch
+                val pos = lstGuid.indexOf(guid.toString())
+                if (pos >= 0) {
+                    listview?.setItemChecked(pos, true)
+                }
             }
         } catch (e: WriterException) {
             e.printStackTrace()
@@ -64,15 +71,17 @@ class TaskerActivity : BaseActivity() {
         extraBundle.putString(AppConfig.TASKER_EXTRA_BUNDLE_GUID, vmess[position].guid)
         val intent = Intent()
 
-        var remarks = vmess[position].remarks
+        val remarks = vmess[position].remarks
+        var blurb = ""
+
         if (switch_start_service.isChecked) {
-            remarks = "Start $remarks"
+            blurb = "Start $remarks"
         } else {
-            remarks = "Stop $remarks"
+            blurb = "Stop $remarks"
         }
 
         intent.putExtra(AppConfig.TASKER_EXTRA_BUNDLE, extraBundle)
-        intent.putExtra(AppConfig.TASKER_EXTRA_STRING_BLURB, remarks)
+        intent.putExtra(AppConfig.TASKER_EXTRA_STRING_BLURB, blurb)
         setResult(Activity.RESULT_OK, intent)
         finish()
     }

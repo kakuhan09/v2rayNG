@@ -13,13 +13,17 @@ import java.util.*
 import kotlin.collections.HashMap
 import android.app.ActivityManager
 import android.content.ClipData
+import android.content.Intent
+import android.net.Uri
 import android.text.TextUtils
 import android.util.Patterns
 import android.webkit.URLUtil
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.R
 import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.ui.SettingsActivity
 import me.dozen.dpreference.DPreference
+import org.jetbrains.anko.toast
 
 object Utils {
 
@@ -249,6 +253,7 @@ object Utils {
      * startVService
      */
     fun startVService(context: Context): Boolean {
+        context.toast(R.string.toast_services_start)
         if (AngConfigManager.genStoreV2rayConfig()) {
             V2RayVpnService.startV2Ray(context)
             return true
@@ -277,7 +282,13 @@ object Utils {
      * stopVService
      */
     fun stopVService(context: Context) {
+        context.toast(R.string.toast_services_stop)
         MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
+    }
+
+    fun openUri(context: Context, uriString: String) {
+        val uri = Uri.parse(uriString)
+        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
     }
 }
 

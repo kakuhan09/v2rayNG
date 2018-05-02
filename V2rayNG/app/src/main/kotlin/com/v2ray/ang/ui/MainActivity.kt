@@ -22,9 +22,12 @@ import org.jetbrains.anko.*
 import java.lang.ref.SoftReference
 import java.net.URL
 import android.content.IntentFilter
+import android.support.v7.widget.helper.ItemTouchHelper
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
+import com.v2ray.ang.helper.SimpleItemTouchHelperCallback
+
 
 class MainActivity : BaseActivity() {
     companion object {
@@ -47,6 +50,7 @@ class MainActivity : BaseActivity() {
         }
 
     private val adapter by lazy { MainRecyclerAdapter(this) }
+    private var mItemTouchHelper: ItemTouchHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,14 +69,18 @@ class MainActivity : BaseActivity() {
             }
         }
 
+        recycler_view.setHasFixedSize(true)
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.adapter = adapter
+
+        val callback = SimpleItemTouchHelperCallback(adapter)
+        mItemTouchHelper = ItemTouchHelper(callback)
+        mItemTouchHelper?.attachToRecyclerView(recycler_view)
     }
 
     fun startV2Ray() {
-        fabProgressCircle?.show()
-
-        toast(R.string.toast_services_start)
+        showCircle()
+//        toast(R.string.toast_services_start)
         Utils.startVService(this)
     }
 
@@ -181,7 +189,7 @@ class MainActivity : BaseActivity() {
                     .addCategory(Intent.CATEGORY_DEFAULT)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
         } catch (e: Exception) {
-            RxPermissions.getInstance(this)
+            RxPermissions(this)
                     .request(Manifest.permission.CAMERA)
                     .subscribe {
                         if (it)
@@ -290,7 +298,7 @@ class MainActivity : BaseActivity() {
      * read content from uri
      */
     private fun readContentFromUri(uri: Uri) {
-        RxPermissions.getInstance(this)
+        RxPermissions(this)
                 .request(Manifest.permission.READ_EXTERNAL_STORAGE)
                 .subscribe {
                     if (it) {
@@ -371,9 +379,13 @@ class MainActivity : BaseActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    fun showCircle() {
+        fabProgressCircle?.show()
+    }
+
     fun hideCircle() {
         try {
-            Observable.timer(1, TimeUnit.SECONDS)
+            Observable.timer(500, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {
                         if (fabProgressCircle.isShown) {

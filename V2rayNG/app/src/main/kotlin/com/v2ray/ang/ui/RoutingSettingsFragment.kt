@@ -83,7 +83,7 @@ class RoutingSettingsFragment : Fragment() {
                     .addCategory(Intent.CATEGORY_DEFAULT)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
         } catch (e: Exception) {
-            RxPermissions.getInstance(activity)
+            RxPermissions(activity!!)
                     .request(Manifest.permission.CAMERA)
                     .subscribe {
                         if (it)

@@ -35,7 +35,8 @@
     <string name="server_lab_network">網路</string>
     <string name="server_lab_more_function">更多功能</string>
     <string name="server_lab_head_type">標頭類型</string>
-    <string name="server_lab_request_host">要求 主機/ws 路徑/ws(路徑;主機)</string>
+    <string name="server_lab_request_host">要求 主機(host/ws host/h2 host)</string>
+    <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">傳輸層安全性</string>
     <string name="toast_success">成功</string>
     <string name="toast_failure">失敗</string>
@@ -92,6 +93,7 @@
     <string name="donate_error_purchase2">購買錯誤，真實性驗證失敗。</string>
     <string name="donate_success_purchase">感謝您的捐款！</string>
     <string name="donate_item_click">捐款</string>
+    <string name="donate_item_paypal">Paypal</string>
 
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">複製</string>

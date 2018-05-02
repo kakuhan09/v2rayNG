@@ -1,7 +1,7 @@
 package com.v2ray.ang
 
 import android.app.Application
-import com.squareup.leakcanary.LeakCanary
+//import com.squareup.leakcanary.LeakCanary
 import com.v2ray.ang.util.AngConfigManager
 import me.dozen.dpreference.DPreference
 import org.jetbrains.anko.defaultSharedPreferences
@@ -19,7 +19,7 @@ class AngApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        LeakCanary.install(this)
+//        LeakCanary.install(this)
 
         firstRun = defaultSharedPreferences.getInt(PREF_LAST_VERSION, 0) != BuildConfig.VERSION_CODE
         if (firstRun)

@@ -35,7 +35,8 @@
     <string name="server_lab_network">network</string>
     <string name="server_lab_more_function">more function</string>
     <string name="server_lab_head_type">head type</string>
-    <string name="server_lab_request_host">request host/ws path/ws(path;host)</string>
+    <string name="server_lab_request_host">request host(host/ws host/h2 host)</string>
+    <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">tls</string>
     <string name="toast_success">Success</string>
     <string name="toast_failure">Failure</string>
@@ -92,6 +93,7 @@
     <string name="donate_error_purchase2">Error Purchase,Authenticity verification failed.</string>
     <string name="donate_success_purchase">Thank you for your donation!</string>
     <string name="donate_item_click">Donate</string>
+    <string name="donate_item_paypal">Paypal</string>
 
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">Copy</string>

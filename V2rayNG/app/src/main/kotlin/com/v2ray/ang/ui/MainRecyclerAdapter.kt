@@ -6,19 +6,24 @@ import android.view.View
 import android.view.ViewGroup
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.AngConfig
+import com.v2ray.ang.helper.ItemTouchHelperAdapter
+import com.v2ray.ang.helper.ItemTouchHelperViewHolder
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_qrcode.view.*
 import kotlinx.android.synthetic.main.item_recycler_main.view.*
 import org.jetbrains.anko.*
+import java.util.*
 
-class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<MainRecyclerAdapter.BaseViewHolder>() {
+class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<MainRecyclerAdapter.BaseViewHolder>()
+        , ItemTouchHelperAdapter {
     companion object {
         private const val VIEW_TYPE_ITEM = 1
         private const val VIEW_TYPE_FOOTER = 2
     }
 
-    private var mActivity: BaseActivity = activity
+    private var mActivity: MainActivity = activity
     private lateinit var configs: AngConfig
     private val share_method: Array<out String> by lazy {
         mActivity.resources.getStringArray(R.array.share_method)
@@ -103,7 +108,9 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
                     AngConfigManager.setActiveServer(position)
                 } else {
                     AngConfigManager.setActiveServer(position)
+                    mActivity.showCircle()
                     Utils.startVService(mActivity)
+
                 }
                 notifyDataSetChanged()
             }
@@ -141,15 +148,33 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
 
     open class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    class MainViewHolder(itemView: View) : BaseViewHolder(itemView) {
+    class MainViewHolder(itemView: View) : BaseViewHolder(itemView), ItemTouchHelperViewHolder {
         val radio = itemView.btn_radio!!
         val name = itemView.tv_name!!
         val statistics = itemView.tv_statistics!!
         val infoContainer = itemView.info_container!!
         val layout_edit = itemView.layout_edit!!
         val layout_share = itemView.layout_share!!
+
+        override fun onItemSelected() {
+            itemView.setBackgroundColor(Color.LTGRAY)
+        }
+
+        override fun onItemClear() {
+            itemView.setBackgroundColor(0)
+        }
     }
 
     class FooterViewHolder(itemView: View) : BaseViewHolder(itemView)
 
+    override fun onItemDismiss(position: Int) {
+//        mItems.remove(position)
+        notifyItemRemoved(position)
+    }
+
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        AngConfigManager.swapServer(fromPosition, toPosition)
+        notifyItemMoved(fromPosition, toPosition)
+        return true
+    }
 }

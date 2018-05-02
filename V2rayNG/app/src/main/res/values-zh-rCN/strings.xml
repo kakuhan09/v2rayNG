@@ -35,7 +35,8 @@
     <string name="server_lab_network">传输协议(network)</string>
     <string name="server_lab_more_function">功能设置（不清楚则保持默认值）</string>
     <string name="server_lab_head_type">伪装类型(type)</string>
-    <string name="server_lab_request_host">伪装域名/ws path/ws(path+host)分号(;)隔开</string>
+    <string name="server_lab_request_host">伪装域名host(host/ws host/h2 host)</string>
+    <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">底层传输安全</string>
     <string name="toast_success">成功</string>
     <string name="toast_failure">失败</string>
@@ -91,6 +92,7 @@
     <string name="donate_error_purchase2">错误,真实性验证失败.</string>
     <string name="donate_success_purchase">感谢您的捐赠!</string>
     <string name="donate_item_click">捐赠</string>
+    <string name="donate_item_paypal">Paypal</string>
 
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">复制</string>

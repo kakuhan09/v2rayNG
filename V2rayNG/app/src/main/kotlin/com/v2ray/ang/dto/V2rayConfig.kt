@@ -44,7 +44,10 @@ data class V2rayConfig(val port: Int,
                                       var security: String,
                                       var tcpSettings: TcpsettingsBean?,
                                       var kcpsettings: KcpsettingsBean?,
-                                      var wssettings: WssettingsBean?) {
+                                      var wssettings: WssettingsBean?,
+                                      var httpsettings: HttpsettingsBean?,
+                                      var tlssettings: TlssettingsBean?
+        ) {
 
             data class TcpsettingsBean(var connectionReuse: Boolean = true,
                                        var header: HeaderBean = HeaderBean()) {
@@ -69,6 +72,11 @@ data class V2rayConfig(val port: Int,
                                       var headers: HeadersBean = HeadersBean()) {
                 data class HeadersBean(var Host: String = "")
             }
+
+            data class HttpsettingsBean(var host: List<String> = ArrayList<String>(), var path: String = "")
+
+            data class TlssettingsBean(var allowInsecure: Boolean = true,
+                                       var serverName: String = "")
         }
     }
 
@@ -92,7 +100,7 @@ data class V2rayConfig(val port: Int,
                                 var rules: ArrayList<RulesBean>) {
 
             data class RulesBean(var type: String,
-                                 //var port: String,
+                    //var port: String,
                                  var ip: ArrayList<String>?,
                                  var domain: ArrayList<String>?,
                                  var outboundTag: String)
