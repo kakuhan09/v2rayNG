@@ -20,6 +20,7 @@
         <item>srtp</item>
         <item>utp</item>
         <item>wechat-video</item>
+        <item>dtls</item>
     </string-array>
 
     <string-array name="headertypetcps" translatable="false">
@@ -32,6 +33,7 @@
         <item>srtp</item>
         <item>utp</item>
         <item>wechat-video</item>
+        <item>dtls</item>
     </string-array>
 
     <string-array name="streamsecuritys" translatable="false">

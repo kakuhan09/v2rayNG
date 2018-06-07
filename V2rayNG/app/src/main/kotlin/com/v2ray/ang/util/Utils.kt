@@ -104,7 +104,7 @@ object Utils {
      */
     fun encode(text: String): String {
         try {
-            return Base64.encodeToString(text.toByteArray(charset("UTF-8")), Base64.DEFAULT)
+            return Base64.encodeToString(text.toByteArray(charset("UTF-8")), Base64.NO_WRAP)
         } catch (e: Exception) {
             e.printStackTrace()
             return ""
@@ -144,7 +144,7 @@ object Utils {
     /**
      * create qrcode using zxing
      */
-    fun createQRCode(text: String, size: Int = 500): Bitmap? {
+    fun createQRCode(text: String, size: Int = 800): Bitmap? {
         try {
             val hints = HashMap<EncodeHintType, String>()
             hints.put(EncodeHintType.CHARACTER_SET, "utf-8")

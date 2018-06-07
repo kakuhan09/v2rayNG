@@ -8,7 +8,8 @@
 
     <ImageView
         android:id="@+id/iv_qcode"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="330dp"
+        android:layout_height="330dp"
+        android:scaleType="fitXY"
         android:src="@drawable/ic_fab_check" />
 </LinearLayout>

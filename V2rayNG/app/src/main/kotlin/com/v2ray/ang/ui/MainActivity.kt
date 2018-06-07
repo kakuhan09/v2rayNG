@@ -168,6 +168,14 @@ class MainActivity : BaseActivity() {
             importQRcode(REQUEST_SCAN_URL)
             true
         }
+        R.id.export_all -> {
+            if (AngConfigManager.shareAll2Clipboard() == 0) {
+                toast(R.string.toast_success)
+            } else {
+                toast(R.string.toast_failure)
+            }
+            true
+        }
         R.id.settings -> {
             startActivity<SettingsActivity>("isRunning" to isRunning)
             true
@@ -216,15 +224,31 @@ class MainActivity : BaseActivity() {
     }
 
     fun importConfig(server: String?) {
-        if (server == null) {
-            return
-        }
-        val resId = AngConfigManager.importConfig(server)
-        if (resId > 0) {
-            toast(resId)
-        } else {
-            toast(R.string.toast_success)
-            adapter.updateConfigList()
+        try {
+            if (server == null) {
+                return
+            }
+            var servers = server
+            if (server.indexOf("vmess") == server.lastIndexOf("vmess")) {
+                servers = server.replace("\n", "")
+            }
+
+            var count = 0
+            servers.lines()
+                    .forEach {
+                        val resId = AngConfigManager.importConfig(it)
+                        if (resId == 0) {
+                            count++
+                        }
+                    }
+            if (count > 0) {
+                toast(R.string.toast_success)
+                adapter.updateConfigList()
+            } else {
+                toast(R.string.toast_failure)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

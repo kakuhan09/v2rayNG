@@ -1,5 +1,6 @@
 package com.v2ray.ang.util
 
+import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import com.google.gson.Gson
@@ -98,7 +99,7 @@ object V2rayConfigUtil {
             if (config.index < 0
                     || config.vmess.count() <= 0
                     || config.index > config.vmess.count() - 1
-                    ) {
+            ) {
                 return result
             }
 
@@ -125,7 +126,7 @@ object V2rayConfigUtil {
             if (config.index < 0
                     || config.vmess.count() <= 0
                     || config.index > config.vmess.count() - 1
-                    ) {
+            ) {
                 return result
             }
 
@@ -175,7 +176,7 @@ object V2rayConfigUtil {
             if (config.index < 0
                     || config.vmess.count() <= 0
                     || config.index > config.vmess.count() - 1
-                    ) {
+            ) {
                 return result
             }
             val vmess = config.vmess[config.index]
@@ -216,16 +217,24 @@ object V2rayConfigUtil {
             v2rayConfig.outbound.streamSettings = boundStreamSettings(config)
 
             //如果非ip
-            if (!Utils.isIpAddress(vmess.address)) {
-                val addr = String.format("%s:%s", vmess.address, vmess.port)
-                val domainName = lib2rayObj.optJSONObject("preparedDomainName")
-                        .optJSONArray("domainName")
-                if (domainName.length() > 0) {
-                    for (index in 0 until domainName.length()) {
-                        domainName.remove(index)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (!Utils.isIpAddress(vmess.address)) {
+                    val addr = String.format("%s:%s", vmess.address, vmess.port)
+                    val domainName = lib2rayObj.optJSONObject("preparedDomainName")
+                            .optJSONArray("domainName")
+                    if (domainName.length() > 0) {
+                        for (index in 0 until domainName.length()) {
+                            domainName.remove(index)
+                        }
                     }
+                    domainName.put(addr)
                 }
-                domainName.put(addr)
+            } else {
+                if (!Utils.isIpAddress(vmess.address)) {
+                    lib2rayObj.optJSONObject("preparedDomainName")
+                            .optJSONArray("domainName")
+                            .put(String.format("%s:%s", vmess.address, vmess.port))
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -413,9 +422,12 @@ object V2rayConfigUtil {
                 userRule
                         .split(",")
                         .forEach {
-                            if (Utils.isIpAddress(it)) {
+                            if (Utils.isIpAddress(it) || it.startsWith("geoip:")) {
                                 rulesIP.ip?.add(it)
-                            } else if (Utils.isValidUrl(it)) {
+                            } else if (Utils.isValidUrl(it)
+                                    || it.startsWith("geosite:")
+                                    || it.startsWith("regexp:")
+                                    || it.startsWith("domain:")) {
                                 rulesDomain.domain?.add(it)
                             }
                         }

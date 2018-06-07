@@ -23,7 +23,7 @@ class PerAppProxyAdapter(val activity: BaseActivity, val apps: List<AppInfo>, bl
     private var mActivity: BaseActivity = activity
     val blacklist = if (blacklist == null) HashSet<String>() else HashSet<String>(blacklist)
 
-    override fun onBindViewHolder(holder: BaseViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         if (holder is AppViewHolder) {
             val appInfo = apps[position - 1]
             holder.bind(appInfo)
@@ -32,7 +32,7 @@ class PerAppProxyAdapter(val activity: BaseActivity, val apps: List<AppInfo>, bl
 
     override fun getItemCount() = apps.size + 1
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder? {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         val ctx = parent.context
 
         return when (viewType) {
@@ -42,16 +42,16 @@ class PerAppProxyAdapter(val activity: BaseActivity, val apps: List<AppInfo>, bl
                         ctx.resources.getDimensionPixelSize(R.dimen.bypass_list_header_height) * 3)
                 BaseViewHolder(view)
             }
+//            VIEW_TYPE_ITEM -> AppViewHolder(ctx.layoutInflater
+//                    .inflate(R.layout.item_recycler_bypass_list, parent, false))
 
-            VIEW_TYPE_ITEM -> AppViewHolder(ctx.layoutInflater
+            else -> AppViewHolder(ctx.layoutInflater
                     .inflate(R.layout.item_recycler_bypass_list, parent, false))
 
-            else -> null
         }
     }
 
-    override fun getItemViewType(position: Int)
-            = if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_ITEM
+    override fun getItemViewType(position: Int) = if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_ITEM
 
     open class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 

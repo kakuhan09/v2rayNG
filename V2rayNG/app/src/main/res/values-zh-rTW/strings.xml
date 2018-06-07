@@ -97,6 +97,7 @@
 
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">複製</string>
+    <string name="title_export_all">匯出全部配置至剪貼簿</string>
 
     <string name="tasker_start_service">啟動服務</string>
     <string name="tasker_setting_confirm">確定</string>

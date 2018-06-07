@@ -171,6 +171,7 @@ class PerAppProxyActivity : BaseActivity() {
                     val packageName = it.packageName
                     adapter?.blacklist!!.add(packageName)
                 }
+
             }
             it.notifyDataSetChanged()
             true

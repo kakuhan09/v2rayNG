@@ -14,6 +14,7 @@ import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.dto.VmessQRCode
 import java.util.*
 
+
 object AngConfigManager {
     private lateinit var app: AngApplication
     private lateinit var angConfig: AngConfig
@@ -178,8 +179,9 @@ object AngConfigManager {
         if (angConfig.index < 0
                 || angConfig.vmess.count() <= 0
                 || angConfig.index > angConfig.vmess.count() - 1
-                )
+        ) {
             return ""
+        }
         return angConfig.vmess[angConfig.index].remarks
     }
 
@@ -187,8 +189,9 @@ object AngConfigManager {
         if (angConfig.index < 0
                 || angConfig.vmess.count() <= 0
                 || angConfig.index > angConfig.vmess.count() - 1
-                )
+        ) {
             return ""
+        }
         return angConfig.vmess[angConfig.index].guid
     }
 
@@ -203,37 +206,45 @@ object AngConfigManager {
             if (server.indexOf(VMESS_PROTOCOL) < 0) {
                 return R.string.toast_incorrect_protocol
             }
-            var result = server.replace(VMESS_PROTOCOL, "")
-            result = Utils.decode(result)
-            if (TextUtils.isEmpty(result)) {
-                return R.string.toast_decoding_failed
-            }
-            val vmessQRCode = Gson().fromJson(result, VmessQRCode::class.java)
-            if (TextUtils.isEmpty(vmessQRCode.add)
-                    || TextUtils.isEmpty(vmessQRCode.port)
-                    || TextUtils.isEmpty(vmessQRCode.id)
-                    || TextUtils.isEmpty(vmessQRCode.aid)
-                    || TextUtils.isEmpty(vmessQRCode.net)
-                    ) {
-                return R.string.toast_incorrect_protocol
-            }
 
-            val vmess = AngConfig.VmessBean()
-            vmess.security = "chacha20-poly1305"
-            vmess.network = "tcp"
-            vmess.headerType = "none"
+            var vmess = AngConfig.VmessBean()
+            val indexSplit = server.indexOf("?")
+            if (indexSplit > 0) {
+                vmess = ResolveVmess4Kitsunebi(server)
+            } else {
 
-            vmess.configVersion = Utils.parseInt(vmessQRCode.v)
-            vmess.remarks = vmessQRCode.ps
-            vmess.address = vmessQRCode.add
-            vmess.port = Utils.parseInt(vmessQRCode.port)
-            vmess.id = vmessQRCode.id
-            vmess.alterId = Utils.parseInt(vmessQRCode.aid)
-            vmess.network = vmessQRCode.net
-            vmess.headerType = vmessQRCode.type
-            vmess.requestHost = vmessQRCode.host
-            vmess.path = vmessQRCode.path
-            vmess.streamSecurity = vmessQRCode.tls
+                var result = server.replace(VMESS_PROTOCOL, "")
+                result = Utils.decode(result)
+                if (TextUtils.isEmpty(result)) {
+                    return R.string.toast_decoding_failed
+                }
+                val vmessQRCode = Gson().fromJson(result, VmessQRCode::class.java)
+                if (TextUtils.isEmpty(vmessQRCode.add)
+                        || TextUtils.isEmpty(vmessQRCode.port)
+                        || TextUtils.isEmpty(vmessQRCode.id)
+                        || TextUtils.isEmpty(vmessQRCode.aid)
+                        || TextUtils.isEmpty(vmessQRCode.net)
+                ) {
+                    return R.string.toast_incorrect_protocol
+                }
+
+//            val vmess = AngConfig.VmessBean()
+                vmess.security = "chacha20-poly1305"
+                vmess.network = "tcp"
+                vmess.headerType = "none"
+
+                vmess.configVersion = Utils.parseInt(vmessQRCode.v)
+                vmess.remarks = vmessQRCode.ps
+                vmess.address = vmessQRCode.add
+                vmess.port = Utils.parseInt(vmessQRCode.port)
+                vmess.id = vmessQRCode.id
+                vmess.alterId = Utils.parseInt(vmessQRCode.aid)
+                vmess.network = vmessQRCode.net
+                vmess.headerType = vmessQRCode.type
+                vmess.requestHost = vmessQRCode.host
+                vmess.path = vmessQRCode.path
+                vmess.streamSecurity = vmessQRCode.tls
+            }
 
             upgradeServerVersion(vmess)
 
@@ -245,6 +256,41 @@ object AngConfigManager {
         return 0
     }
 
+    private fun ResolveVmess4Kitsunebi(server: String): AngConfig.VmessBean {
+
+        val vmess = AngConfig.VmessBean()
+
+        var result = server.replace(VMESS_PROTOCOL, "")
+        val indexSplit = result.indexOf("?")
+        if (indexSplit > 0) {
+            result = result.substring(0, indexSplit)
+        }
+        result = Utils.decode(result)
+
+        val arr1 = result.split('@')
+        if (arr1.count() != 2) {
+            return vmess
+        }
+        val arr21 = arr1[0].split(':')
+        val arr22 = arr1[1].split(':')
+        if (arr21.count() != 2 || arr21.count() != 2) {
+            return vmess
+        }
+
+        vmess.address = arr22[0]
+        vmess.port = Utils.parseInt(arr22[1])
+        vmess.security = arr21[0]
+        vmess.id = arr21[1]
+
+        vmess.security = "chacha20-poly1305"
+        vmess.network = "tcp"
+        vmess.headerType = "none"
+        vmess.remarks = "Alien"
+        vmess.alterId = 0
+
+        return vmess
+    }
+
     /**
      * share config
      */
@@ -253,6 +299,10 @@ object AngConfigManager {
             if (index < 0 || index > angConfig.vmess.count() - 1) {
                 return ""
             }
+            if (angConfig.vmess[index].configType != 1) {
+                return ""
+            }
+
             val vmess = angConfig.vmess[index]
             val vmessQRCode = VmessQRCode()
             vmessQRCode.v = vmess.configVersion.toString()
@@ -288,6 +338,30 @@ object AngConfigManager {
 
             Utils.setClipboard(app.applicationContext, conf)
 
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
+
+    /**
+     * share2Clipboard
+     */
+    fun shareAll2Clipboard(): Int {
+        try {
+            val sb = StringBuilder()
+            for (k in 0 until angConfig.vmess.count()) {
+                val url = shareConfig(k)
+                if (TextUtils.isEmpty(url)) {
+                    continue
+                }
+                sb.append(url)
+                sb.appendln()
+            }
+            if (sb.count() > 0) {
+                Utils.setClipboard(app.applicationContext, sb.toString())
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             return -1
@@ -374,7 +448,6 @@ object AngConfigManager {
             e.printStackTrace()
             return -1
         }
-        return 0
     }
 
     /**

@@ -119,7 +119,7 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-        return when (viewType) {
+        when (viewType) {
             VIEW_TYPE_ITEM ->
                 return MainViewHolder(parent.context.layoutInflater
                         .inflate(R.layout.item_recycler_main, parent, false))
@@ -168,8 +168,12 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
     class FooterViewHolder(itemView: View) : BaseViewHolder(itemView)
 
     override fun onItemDismiss(position: Int) {
-//        mItems.remove(position)
-        notifyItemRemoved(position)
+        if (configs.index != position) {
+            if (AngConfigManager.removeServer(position) == 0) {
+                notifyItemRemoved(position)
+            }
+        }
+        notifyItemChanged(position)
     }
 
     override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
