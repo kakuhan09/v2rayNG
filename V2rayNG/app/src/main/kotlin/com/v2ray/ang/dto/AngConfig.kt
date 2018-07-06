@@ -2,7 +2,8 @@ package com.v2ray.ang.dto
 
 data class AngConfig(
         var index: Int,
-        var vmess: ArrayList<VmessBean>
+        var vmess: ArrayList<VmessBean>,
+        var subItem: ArrayList<SubItemBean>
 ) {
     data class VmessBean(var guid: String = "123456",
                          var address: String = "v2ray.cool",
@@ -17,5 +18,10 @@ data class AngConfig(
                          var path: String = "",
                          var streamSecurity: String = "",
                          var configType: Int = 1,
-                         var configVersion: Int = 1)
+                         var configVersion: Int = 1,
+                         var subid: String = "")
+
+    data class SubItemBean(var id: String = "",
+                           var remarks: String = "",
+                           var url: String = "")
 }

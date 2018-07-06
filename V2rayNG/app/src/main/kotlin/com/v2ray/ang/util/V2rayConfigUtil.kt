@@ -103,10 +103,12 @@ object V2rayConfigUtil {
                 return result
             }
 
-            if (config.vmess[config.index].configType == 1) {
+            if (config.vmess[config.index].configType == AppConfig.EConfigType.Vmess) {
                 result = getV2rayConfigType1(app, config)
-            } else if (config.vmess[config.index].configType == 2) {
+            } else if (config.vmess[config.index].configType == AppConfig.EConfigType.Custom) {
                 result = getV2rayConfigType2(app, config)
+            } else if (config.vmess[config.index].configType == AppConfig.EConfigType.Shadowsocks) {
+                result = getV2rayConfigType1(app, config)
             }
             Log.d("V2rayConfigUtil", result.content)
             return result
@@ -202,19 +204,49 @@ object V2rayConfigUtil {
     private fun outbound(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
             val vmess = config.vmess[config.index]
-            v2rayConfig.outbound.settings.vnext[0].address = vmess.address
-            v2rayConfig.outbound.settings.vnext[0].port = vmess.port
 
-            v2rayConfig.outbound.settings.vnext[0].users[0].id = vmess.id
-            v2rayConfig.outbound.settings.vnext[0].users[0].alterId = vmess.alterId
-            v2rayConfig.outbound.settings.vnext[0].users[0].security = vmess.security
+            when (vmess.configType) {
+                AppConfig.EConfigType.Vmess -> {
+                    v2rayConfig.outbound.settings.servers = null
 
-            //Mux
-            val muxEnabled = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
-            v2rayConfig.outbound.mux.enabled = muxEnabled
+                    val vnext = v2rayConfig.outbound.settings.vnext?.get(0)
+                    vnext?.address = vmess.address
+                    vnext?.port = vmess.port
+                    val user = vnext?.users?.get(0)
+                    user?.id = vmess.id
+                    user?.alterId = vmess.alterId
+                    user?.security = vmess.security
 
-            //远程服务器底层传输配置
-            v2rayConfig.outbound.streamSettings = boundStreamSettings(config)
+                    //Mux
+                    val muxEnabled = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
+                    v2rayConfig.outbound.mux.enabled = muxEnabled
+
+                    //远程服务器底层传输配置
+                    v2rayConfig.outbound.streamSettings = boundStreamSettings(config)
+
+                    v2rayConfig.outbound.protocol = "vmess"
+
+                }
+                AppConfig.EConfigType.Shadowsocks -> {
+                    v2rayConfig.outbound.settings.vnext = null
+
+                    val server = v2rayConfig.outbound.settings.servers?.get(0)
+                    server?.address = vmess.address
+                    server?.method = vmess.security
+                    server?.ota = false
+                    server?.password = vmess.id
+                    server?.port = vmess.port
+                    server?.level = 1
+
+                    //Mux
+                    v2rayConfig.outbound.mux.enabled = false
+
+                    v2rayConfig.outbound.protocol = "shadowsocks"
+
+                }
+                else -> {
+                }
+            }
 
             //如果非ip
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {

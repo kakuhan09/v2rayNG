@@ -24,6 +24,9 @@ import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.ui.SettingsActivity
 import me.dozen.dpreference.DPreference
 import org.jetbrains.anko.toast
+import java.net.URLDecoder
+import java.net.URLEncoder
+
 
 object Utils {
 
@@ -289,6 +292,36 @@ object Utils {
     fun openUri(context: Context, uriString: String) {
         val uri = Uri.parse(uriString)
         context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+    }
+
+    /**
+     * uuid
+     */
+    fun getUuid(): String {
+        try {
+            return UUID.randomUUID().toString().replace("-", "")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ""
+        }
+    }
+
+    fun urlDecode(url: String): String {
+        try {
+            return URLDecoder.decode(url, "UTF-8")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return url
+        }
+    }
+
+    fun urlEncode(url: String): String {
+        try {
+            return URLEncoder.encode(url, "UTF-8")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return url
+        }
     }
 }
 

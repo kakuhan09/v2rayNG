@@ -21,7 +21,8 @@
     <string name="menu_item_del_config">刪除組態</string>
     <string name="menu_item_import_config_qrcode">自 QR 碼匯入組態</string>
     <string name="menu_item_import_config_clipboard">自剪貼簿匯入組態</string>
-    <string name="menu_item_import_config_manually">手動鍵入</string>
+    <string name="menu_item_import_config_manually_vmess">手動鍵入[Vmess]</string>
+    <string name="menu_item_import_config_manually_ss">手動鍵入[Shadowsocks]</string>
     <string name="menu_item_import_config_custom_local">自本機匯入自訂組態</string>
     <string name="menu_item_import_config_custom_url">自網址匯入自訂組態</string>
     <string name="menu_item_import_config_custom_url_scan">掃描網址匯入自訂組態</string>
@@ -38,6 +39,10 @@
     <string name="server_lab_request_host">要求 主機(host/ws host/h2 host)</string>
     <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">傳輸層安全性</string>
+    <string name="server_lab_address3">伺服器位址</string>
+    <string name="server_lab_port3">伺服器埠</string>
+    <string name="server_lab_id3">密碼</string>
+    <string name="server_lab_security3">加密方式</string>
     <string name="toast_success">成功</string>
     <string name="toast_failure">失敗</string>
     <string name="toast_none_data">無資料</string>
@@ -84,6 +89,7 @@
 
     <string name="title_pref_feedback">回饋</string>
     <string name="summary_pref_feedback">回饋提升或前往 GitHub 回報 Bug</string>
+    <string name="summary_pref_tg_group">加入Telegram Group</string>
 
     <string name="title_pref_version">版本</string>
 
@@ -98,6 +104,10 @@
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">複製</string>
     <string name="title_export_all">匯出全部配置至剪貼簿</string>
+    <string name="title_sub_setting">訂閱設定</string>
+    <string name="sub_setting_remarks">備註</string>
+    <string name="sub_setting_url">位址(url)</string>
+    <string name="title_sub_update">更新訂閱</string>
 
     <string name="tasker_start_service">啟動服務</string>
     <string name="tasker_setting_confirm">確定</string>

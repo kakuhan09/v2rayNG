@@ -23,12 +23,13 @@ data class V2rayConfig(val port: Int,
     }
 
     data class OutboundBean(val tag: String,
-                            val protocol: String,
+                            var protocol: String,
                             var settings: OutSettingsBean,
                             var streamSettings: StreamSettingsBean,
                             var mux: MuxBean) {
 
-        data class OutSettingsBean(var vnext: List<VnextBean>) {
+        data class OutSettingsBean(var vnext: List<VnextBean>?,
+                                   var servers: List<ServersBean>?) {
 
             data class VnextBean(var address: String,
                                  var port: Int,
@@ -38,6 +39,14 @@ data class V2rayConfig(val port: Int,
                                      var alterId: Int,
                                      var security: String)
             }
+
+            data class ServersBean(var address: String,
+                                   var method: String,
+                                   var ota: Boolean,
+                                   var password: String,
+                                   var port: Int,
+                                   var level: Int)
+
         }
 
         data class StreamSettingsBean(var network: String,

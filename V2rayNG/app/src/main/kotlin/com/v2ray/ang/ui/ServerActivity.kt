@@ -112,7 +112,12 @@ class ServerActivity : BaseActivity() {
      * save server config
      */
     fun saveServer(): Boolean {
-        val vmess: AngConfig.VmessBean = AngConfig.VmessBean()
+        val vmess: AngConfig.VmessBean
+        if (edit_index >= 0) {
+            vmess = configs.vmess[edit_index]
+        } else {
+            vmess = AngConfig.VmessBean()
+        }
 
         vmess.guid = edit_guid
         vmess.remarks = et_remarks.text.toString()

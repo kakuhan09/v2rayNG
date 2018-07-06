@@ -11,6 +11,7 @@ object AppConfig {
     const val PREF_CURR_CONFIG_GUID = "pref_v2ray_config_guid"
     const val PREF_CURR_CONFIG_NAME = "pref_v2ray_config_name"
     const val VMESS_PROTOCOL: String = "vmess://"
+    const val SS_PROTOCOL: String = "ss://"
     const val BROADCAST_ACTION_SERVICE = "com.v2ray.ang.action.service"
     const val BROADCAST_ACTION_ACTIVITY = "com.v2ray.ang.action.activity"
     const val BROADCAST_ACTION_WIDGET_CLICK = "com.v2ray.ang.action.widget.click"
@@ -39,5 +40,10 @@ object AppConfig {
     const val MSG_STATE_RESTART = 5
     const val MSG_STATE_RESTART_SOFT = 6
 
+    object EConfigType {
+        val Vmess = 1
+        val Custom = 2
+        val Shadowsocks = 3
+    }
 
 }

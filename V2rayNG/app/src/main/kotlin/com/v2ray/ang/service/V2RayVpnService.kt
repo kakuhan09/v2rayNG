@@ -26,6 +26,8 @@ import com.v2ray.ang.util.Utils
 import libv2ray.Libv2ray
 import libv2ray.V2RayCallbacks
 import libv2ray.V2RayVPNServiceSupportsSet
+import java.io.FileDescriptor
+import java.io.PrintWriter
 import java.lang.ref.SoftReference
 
 class V2RayVpnService : VpnService() {
@@ -64,6 +66,12 @@ class V2RayVpnService : VpnService() {
 
     override fun onRevoke() {
         stopV2Ray()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        cancelNotification()
     }
 
     fun setup(parameters: String) {
@@ -134,7 +142,7 @@ class V2RayVpnService : VpnService() {
         v2rayPoint.vpnSupportReady()
         if (v2rayPoint.isRunning) {
             MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_SUCCESS, "")
-//            showNotification()
+            showNotification()
         } else {
             MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_FAILURE, "")
             cancelNotification()
@@ -179,7 +187,7 @@ class V2RayVpnService : VpnService() {
             v2rayPoint.runLoop()
         }
 
-        showNotification()
+//        showNotification()
     }
 
     private fun stopV2Ray(isForced: Boolean = true) {

@@ -33,6 +33,7 @@ class SettingsActivity : BaseActivity() {
         const val PREF_DONATE = "pref_donate"
         //        const val PREF_LICENSES = "pref_licenses"
         const val PREF_FEEDBACK = "pref_feedback"
+        const val PREF_TG_GROUP = "pref_tg_group"
         const val PREF_VERSION = "pref_version"
         //        const val PREF_AUTO_RESTART = "pref_auto_restart"
     }
@@ -53,6 +54,7 @@ class SettingsActivity : BaseActivity() {
         val donate: Preference by lazy { findPreference(PREF_DONATE) }
         //        val licenses: Preference by lazy { findPreference(PREF_LICENSES) }
         val feedback: Preference by lazy { findPreference(PREF_FEEDBACK) }
+        val tgGroup: Preference by lazy { findPreference(PREF_TG_GROUP) }
         val version: Preference by lazy { findPreference(PREF_VERSION) }
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +79,11 @@ class SettingsActivity : BaseActivity() {
 
             feedback.onClick {
                 Utils.openUri(activity, "https://github.com/2dust/v2rayNG/issues")
+            }
+            tgGroup.onClick {
+                //                Utils.openUri(activity, "https://t.me/v2rayN")
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg:resolve?domain=v2rayN"))
+                startActivity(intent)
             }
 
             perAppProxy.setOnPreferenceClickListener {

@@ -21,7 +21,8 @@
     <string name="menu_item_del_config">Delete config</string>
     <string name="menu_item_import_config_qrcode">Import config from QRcode</string>
     <string name="menu_item_import_config_clipboard">Import config from Clipboard</string>
-    <string name="menu_item_import_config_manually">Type manually</string>
+    <string name="menu_item_import_config_manually_vmess">Type manually[Vmess]</string>
+    <string name="menu_item_import_config_manually_ss">Type manually[Shadowsocks]</string>
     <string name="menu_item_import_config_custom_local">Import custom config from locally</string>
     <string name="menu_item_import_config_custom_url">Import custom config from URL</string>
     <string name="menu_item_import_config_custom_url_scan">Import custom config scan URL</string>
@@ -38,6 +39,10 @@
     <string name="server_lab_request_host">request host(host/ws host/h2 host)</string>
     <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">tls</string>
+    <string name="server_lab_address3">address</string>
+    <string name="server_lab_port3">port</string>
+    <string name="server_lab_id3">password</string>
+    <string name="server_lab_security3">security</string>
     <string name="toast_success">Success</string>
     <string name="toast_failure">Failure</string>
     <string name="toast_none_data">There is nothing</string>
@@ -84,6 +89,7 @@
 
     <string name="title_pref_feedback">Feedback</string>
     <string name="summary_pref_feedback">Feedback enhancements or bugs to GitHub</string>
+    <string name="summary_pref_tg_group">Join Telegram Group</string>
 
     <string name="title_pref_version">Version</string>
 
@@ -98,6 +104,10 @@
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">Copy</string>
     <string name="title_export_all">Export all config to clipboard</string>
+    <string name="title_sub_setting">subscription setting</string>
+    <string name="sub_setting_remarks">remarks</string>
+    <string name="sub_setting_url">url</string>
+    <string name="title_sub_update">Update subscription</string>
 
     <string name="tasker_start_service">Start Service</string>
     <string name="tasker_setting_confirm">Confirm</string>

@@ -4,17 +4,15 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
-import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
-import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
-import kotlinx.android.synthetic.main.activity_server2.*
+import kotlinx.android.synthetic.main.activity_server3.*
 import org.jetbrains.anko.*
 
 
-class Server2Activity : BaseActivity() {
+class Server3Activity : BaseActivity() {
     companion object {
         private const val REQUEST_SCAN = 1
     }
@@ -26,10 +24,13 @@ class Server2Activity : BaseActivity() {
     private var edit_index: Int = -1 //当前编辑的服务器
     private var edit_guid: String = ""
     private var isRunning: Boolean = false
+    private val securitys: Array<out String> by lazy {
+        resources.getStringArray(R.array.ss_securitys)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_server2)
+        setContentView(R.layout.activity_server3)
 
         configs = AngConfigManager.configs
         edit_index = intent.getIntExtra("position", -1)
@@ -50,7 +51,15 @@ class Server2Activity : BaseActivity() {
      */
     fun bindingServer(vmess: AngConfig.VmessBean): Boolean {
         et_remarks.text = Utils.getEditable(vmess.remarks)
-        tv_content.text = defaultDPreference.getPrefString(AppConfig.ANG_CONFIG + edit_guid, "")
+
+        et_address.text = Utils.getEditable(vmess.address)
+        et_port.text = Utils.getEditable(vmess.port.toString())
+        et_id.text = Utils.getEditable(vmess.id)
+        val security = Utils.arrayFind(securitys, vmess.security)
+        if (security >= 0) {
+            sp_security.setSelection(security)
+        }
+
         return true
     }
 
@@ -59,6 +68,11 @@ class Server2Activity : BaseActivity() {
      */
     fun clearServer(): Boolean {
         et_remarks.text = null
+        et_address.text = null
+        et_port.text = Utils.getEditable("10086")
+        et_id.text = null
+        sp_security.setSelection(0)
+
         return true
     }
 
@@ -66,16 +80,38 @@ class Server2Activity : BaseActivity() {
      * save server config
      */
     fun saveServer(): Boolean {
-        val vmess = configs.vmess[edit_index]
+        val vmess: AngConfig.VmessBean
+        if (edit_index >= 0) {
+            vmess = configs.vmess[edit_index]
+        } else {
+            vmess = AngConfig.VmessBean()
+        }
 
+        vmess.guid = edit_guid
         vmess.remarks = et_remarks.text.toString()
+        vmess.address = et_address.text.toString()
+        vmess.port = Utils.parseInt(et_port.text.toString())
+        vmess.id = et_id.text.toString()
+        vmess.security = securitys[sp_security.selectedItemPosition]
 
         if (TextUtils.isEmpty(vmess.remarks)) {
             toast(R.string.server_lab_remarks)
             return false
         }
+        if (TextUtils.isEmpty(vmess.address)) {
+            toast(R.string.server_lab_address3)
+            return false
+        }
+        if (TextUtils.isEmpty(vmess.port.toString()) || vmess.port <= 0) {
+            toast(R.string.server_lab_port3)
+            return false
+        }
+        if (TextUtils.isEmpty(vmess.id)) {
+            toast(R.string.server_lab_id3)
+            return false
+        }
 
-        if (AngConfigManager.addCustomServer(vmess, edit_index) == 0) {
+        if (AngConfigManager.addShadowsocksServer(vmess, edit_index) == 0) {
             toast(R.string.toast_success)
             finish()
             return true

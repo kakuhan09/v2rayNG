@@ -60,6 +60,10 @@
             android:title="@string/title_pref_feedback" />
 
         <Preference
+            android:key="pref_tg_group"
+            android:title="@string/summary_pref_tg_group" />
+
+        <Preference
             android:key="pref_version"
             android:title="@string/title_pref_version" />
     </PreferenceCategory>

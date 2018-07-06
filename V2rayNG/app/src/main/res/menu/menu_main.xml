@@ -15,8 +15,12 @@
                 android:title="@string/menu_item_import_config_clipboard"
                 app:showAsAction="never" />
             <item
-                android:id="@+id/import_manually"
-                android:title="@string/menu_item_import_config_manually"
+                android:id="@+id/import_manually_vmess"
+                android:title="@string/menu_item_import_config_manually_vmess"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/import_manually_ss"
+                android:title="@string/menu_item_import_config_manually_ss"
                 app:showAsAction="never" />
 
             <item
@@ -37,6 +41,16 @@
         android:id="@+id/export_all"
         android:icon="@drawable/ic_share_white_24dp"
         android:title="@string/title_export_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/sub_setting"
+        android:icon="@drawable/ic_subscriptions_white_24dp"
+        android:title="@string/title_sub_setting"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/sub_update"
+        android:icon="@drawable/ic_subscriptions_white_24dp"
+        android:title="@string/title_sub_update"
         app:showAsAction="never" />
     <item
         android:id="@+id/settings"

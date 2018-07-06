@@ -2,8 +2,11 @@ package com.v2ray.ang.ui
 
 import android.graphics.Color
 import android.support.v7.widget.RecyclerView
+import android.text.TextUtils
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.helper.ItemTouchHelperAdapter
@@ -47,7 +50,7 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
         if (holder is MainViewHolder) {
             val configType = configs.vmess[position].configType
             val remarks = configs.vmess[position].remarks
-            val guid = configs.vmess[position].guid
+            val subid = configs.vmess[position].subid
             val address = configs.vmess[position].address
             val port = configs.vmess[position].port
 
@@ -55,12 +58,23 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
             holder.radio.isChecked = (position == configs.index)
             holder.itemView.backgroundColor = Color.TRANSPARENT
 
-            if (configType == 1) {
-                holder.statistics.text = "$address : $port"
+            if (TextUtils.isEmpty(subid)) {
+
+                holder.subid.text = ""
+            } else {
+                holder.subid.text = "S"
+
+            }
+
+            if (configType == AppConfig.EConfigType.Vmess) {
+                holder.statistics.text = "vmess  $address : $port"
                 holder.layout_share.visibility = View.VISIBLE
-            } else if (configType == 2) {
+            } else if (configType == AppConfig.EConfigType.Custom) {
                 holder.statistics.text = mActivity.getString(R.string.server_customize_config)
                 holder.layout_share.visibility = View.INVISIBLE
+            } else if (configType == AppConfig.EConfigType.Shadowsocks) {
+                holder.statistics.text = "ss  $address : $port"
+                holder.layout_share.visibility = View.VISIBLE
             }
 
             holder.layout_share.setOnClickListener {
@@ -96,10 +110,12 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
             }
 
             holder.layout_edit.setOnClickListener {
-                if (configType == 1) {
+                if (configType == AppConfig.EConfigType.Vmess) {
                     mActivity.startActivity<ServerActivity>("position" to position, "isRunning" to !changeable)
-                } else if (configType == 2) {
+                } else if (configType == AppConfig.EConfigType.Custom) {
                     mActivity.startActivity<Server2Activity>("position" to position, "isRunning" to !changeable)
+                } else if (configType == AppConfig.EConfigType.Shadowsocks) {
+                    mActivity.startActivity<Server3Activity>("position" to position, "isRunning" to !changeable)
                 }
             }
 
@@ -149,6 +165,7 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
     open class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     class MainViewHolder(itemView: View) : BaseViewHolder(itemView), ItemTouchHelperViewHolder {
+        val subid = itemView.tv_subid
         val radio = itemView.btn_radio!!
         val name = itemView.tv_name!!
         val statistics = itemView.tv_statistics!!

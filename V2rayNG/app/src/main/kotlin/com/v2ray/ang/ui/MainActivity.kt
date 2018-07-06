@@ -23,6 +23,7 @@ import java.lang.ref.SoftReference
 import java.net.URL
 import android.content.IntentFilter
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
@@ -122,7 +123,7 @@ class MainActivity : BaseActivity() {
                 }
             REQUEST_SCAN ->
                 if (resultCode == RESULT_OK) {
-                    importConfig(data?.getStringExtra("SCAN_RESULT"))
+                    importBatchConfig(data?.getStringExtra("SCAN_RESULT"))
                 }
             REQUEST_FILE_CHOOSER -> {
                 if (resultCode == RESULT_OK) {
@@ -151,8 +152,13 @@ class MainActivity : BaseActivity() {
             importClipboard()
             true
         }
-        R.id.import_manually -> {
+        R.id.import_manually_vmess -> {
             startActivity<ServerActivity>("position" to -1, "isRunning" to isRunning)
+            adapter.updateConfigList()
+            true
+        }
+        R.id.import_manually_ss -> {
+            startActivity<Server3Activity>("position" to -1, "isRunning" to isRunning)
             adapter.updateConfigList()
             true
         }
@@ -168,6 +174,17 @@ class MainActivity : BaseActivity() {
             importQRcode(REQUEST_SCAN_URL)
             true
         }
+
+        R.id.sub_setting -> {
+            startActivity<SubSettingActivity>()
+            true
+        }
+
+        R.id.sub_update -> {
+            importConfigViaSub()
+            true
+        }
+
         R.id.export_all -> {
             if (AngConfigManager.shareAll2Clipboard() == 0) {
                 toast(R.string.toast_success)
@@ -215,7 +232,7 @@ class MainActivity : BaseActivity() {
     fun importClipboard(): Boolean {
         try {
             val clipboard = Utils.getClipboard(this)
-            importConfig(clipboard)
+            importBatchConfig(clipboard)
         } catch (e: Exception) {
             e.printStackTrace()
             return false
@@ -223,32 +240,13 @@ class MainActivity : BaseActivity() {
         return true
     }
 
-    fun importConfig(server: String?) {
-        try {
-            if (server == null) {
-                return
-            }
-            var servers = server
-            if (server.indexOf("vmess") == server.lastIndexOf("vmess")) {
-                servers = server.replace("\n", "")
-            }
-
-            var count = 0
-            servers.lines()
-                    .forEach {
-                        val resId = AngConfigManager.importConfig(it)
-                        if (resId == 0) {
-                            count++
-                        }
-                    }
-            if (count > 0) {
-                toast(R.string.toast_success)
-                adapter.updateConfigList()
-            } else {
-                toast(R.string.toast_failure)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+    fun importBatchConfig(server: String?, subid: String = "") {
+        val count = AngConfigManager.importBatchConfig(server, subid)
+        if (count > 0) {
+            toast(R.string.toast_success)
+            adapter.updateConfigList()
+        } else {
+            toast(R.string.toast_failure)
         }
     }
 
@@ -292,6 +290,40 @@ class MainActivity : BaseActivity() {
                 val configText = URL(url).readText()
                 uiThread {
                     importCustomizeConfig(configText)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * import config from sub
+     */
+    fun importConfigViaSub(): Boolean {
+        try {
+            toast(R.string.title_sub_update)
+            val subItem = AngConfigManager.configs.subItem
+            for (k in 0 until subItem.count()) {
+                if (TextUtils.isEmpty(subItem[k].id)
+                        || TextUtils.isEmpty(subItem[k].remarks)
+                        || TextUtils.isEmpty(subItem[k].url)
+                ) {
+                    continue
+                }
+                val id = subItem[k].id
+                val url = subItem[k].url
+                if (!Utils.isValidUrl(url)) {
+                    continue
+                }
+                Log.d("Main", url)
+                doAsync {
+                    val configText = URL(url).readText()
+                    uiThread {
+                        importBatchConfig(Utils.decode(configText), id)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -409,7 +441,7 @@ class MainActivity : BaseActivity() {
 
     fun hideCircle() {
         try {
-            Observable.timer(500, TimeUnit.MILLISECONDS)
+            Observable.timer(300, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {
                         if (fabProgressCircle.isShown) {

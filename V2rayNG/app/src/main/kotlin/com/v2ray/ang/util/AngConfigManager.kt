@@ -2,16 +2,20 @@ package com.v2ray.ang.util
 
 import android.graphics.Bitmap
 import android.text.TextUtils
+import android.util.Log
 import com.google.gson.Gson
 import com.v2ray.ang.AngApplication
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.ANG_CONFIG
 import com.v2ray.ang.AppConfig.PREF_CURR_CONFIG
 import com.v2ray.ang.AppConfig.PREF_CURR_CONFIG_GUID
 import com.v2ray.ang.AppConfig.PREF_CURR_CONFIG_NAME
+import com.v2ray.ang.AppConfig.SS_PROTOCOL
 import com.v2ray.ang.AppConfig.VMESS_PROTOCOL
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.dto.VmessQRCode
+import java.net.URLDecoder
 import java.util.*
 
 
@@ -36,11 +40,15 @@ object AngConfigManager {
             if (!TextUtils.isEmpty(context)) {
                 angConfig = Gson().fromJson(context, AngConfig::class.java)
             } else {
-                angConfig = AngConfig(0, vmess = arrayListOf(AngConfig.VmessBean()))
+                angConfig = AngConfig(0, vmess = arrayListOf(AngConfig.VmessBean()), subItem = arrayListOf(AngConfig.SubItemBean()))
             }
 
             for (i in angConfig.vmess.indices) {
                 upgradeServerVersion(angConfig.vmess[i])
+            }
+
+            if (configs.subItem == null) {
+                configs.subItem = arrayListOf(AngConfig.SubItemBean())
             }
 
         } catch (e: Exception) {
@@ -54,13 +62,14 @@ object AngConfigManager {
     fun addServer(vmess: AngConfig.VmessBean, index: Int): Int {
         try {
             vmess.configVersion = 2
+            vmess.configType = AppConfig.EConfigType.Vmess
 
             if (index >= 0) {
                 //edit
                 angConfig.vmess[index] = vmess
             } else {
                 //add
-                vmess.guid = System.currentTimeMillis().toString()
+                vmess.guid = Utils.getUuid()
                 angConfig.vmess.add(vmess)
                 if (angConfig.vmess.count() == 1) {
                     angConfig.index = 0
@@ -198,57 +207,98 @@ object AngConfigManager {
     /**
      * import config form qrcode or...
      */
-    fun importConfig(server: String?): Int {
+    fun importConfig(server: String?, subid: String): Int {
         try {
             if (server == null || TextUtils.isEmpty(server)) {
                 return R.string.toast_none_data
             }
-            if (server.indexOf(VMESS_PROTOCOL) < 0) {
-                return R.string.toast_incorrect_protocol
-            }
 
             var vmess = AngConfig.VmessBean()
-            val indexSplit = server.indexOf("?")
-            if (indexSplit > 0) {
-                vmess = ResolveVmess4Kitsunebi(server)
-            } else {
 
-                var result = server.replace(VMESS_PROTOCOL, "")
-                result = Utils.decode(result)
-                if (TextUtils.isEmpty(result)) {
-                    return R.string.toast_decoding_failed
+            if (server.startsWith(VMESS_PROTOCOL)) {
+
+                val indexSplit = server.indexOf("?")
+                if (indexSplit > 0) {
+                    vmess = ResolveVmess4Kitsunebi(server)
+                } else {
+
+                    var result = server.replace(VMESS_PROTOCOL, "")
+                    result = Utils.decode(result)
+                    if (TextUtils.isEmpty(result)) {
+                        return R.string.toast_decoding_failed
+                    }
+                    val vmessQRCode = Gson().fromJson(result, VmessQRCode::class.java)
+                    if (TextUtils.isEmpty(vmessQRCode.add)
+                            || TextUtils.isEmpty(vmessQRCode.port)
+                            || TextUtils.isEmpty(vmessQRCode.id)
+                            || TextUtils.isEmpty(vmessQRCode.aid)
+                            || TextUtils.isEmpty(vmessQRCode.net)
+                    ) {
+                        return R.string.toast_incorrect_protocol
+                    }
+
+                    vmess.configType = AppConfig.EConfigType.Vmess
+                    vmess.security = "chacha20-poly1305"
+                    vmess.network = "tcp"
+                    vmess.headerType = "none"
+
+                    vmess.configVersion = Utils.parseInt(vmessQRCode.v)
+                    vmess.remarks = vmessQRCode.ps
+                    vmess.address = vmessQRCode.add
+                    vmess.port = Utils.parseInt(vmessQRCode.port)
+                    vmess.id = vmessQRCode.id
+                    vmess.alterId = Utils.parseInt(vmessQRCode.aid)
+                    vmess.network = vmessQRCode.net
+                    vmess.headerType = vmessQRCode.type
+                    vmess.requestHost = vmessQRCode.host
+                    vmess.path = vmessQRCode.path
+                    vmess.streamSecurity = vmessQRCode.tls
+                    vmess.subid = subid
                 }
-                val vmessQRCode = Gson().fromJson(result, VmessQRCode::class.java)
-                if (TextUtils.isEmpty(vmessQRCode.add)
-                        || TextUtils.isEmpty(vmessQRCode.port)
-                        || TextUtils.isEmpty(vmessQRCode.id)
-                        || TextUtils.isEmpty(vmessQRCode.aid)
-                        || TextUtils.isEmpty(vmessQRCode.net)
-                ) {
+                upgradeServerVersion(vmess)
+                addServer(vmess, -1)
+
+            } else if (server.startsWith(SS_PROTOCOL)) {
+                var result = server.replace(SS_PROTOCOL, "")
+                val indexSplit = result.indexOf("#")
+                if (indexSplit > 0) {
+                    try {
+                        vmess.remarks = Utils.urlDecode(result.substring(indexSplit + 1, result.length))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+                    result = result.substring(0, indexSplit)
+                }
+
+                //part decode
+                val indexS = result.indexOf("@")
+                if (indexS > 0) {
+                    result = Utils.decode(result.substring(0, indexS)) + result.substring(indexS, result.length)
+                } else {
+                    result = Utils.decode(result)
+                }
+
+                val arr1 = result.split('@')
+                if (arr1.count() != 2) {
+                    return R.string.toast_incorrect_protocol
+                }
+                val arr21 = arr1[0].split(':')
+                val arr22 = arr1[1].split(':')
+                if (arr21.count() != 2 || arr21.count() != 2) {
                     return R.string.toast_incorrect_protocol
                 }
 
-//            val vmess = AngConfig.VmessBean()
-                vmess.security = "chacha20-poly1305"
-                vmess.network = "tcp"
-                vmess.headerType = "none"
+                vmess.address = arr22[0]
+                vmess.port = Utils.parseInt(arr22[1])
+                vmess.security = arr21[0]
+                vmess.id = arr21[1]
+                vmess.subid = subid
 
-                vmess.configVersion = Utils.parseInt(vmessQRCode.v)
-                vmess.remarks = vmessQRCode.ps
-                vmess.address = vmessQRCode.add
-                vmess.port = Utils.parseInt(vmessQRCode.port)
-                vmess.id = vmessQRCode.id
-                vmess.alterId = Utils.parseInt(vmessQRCode.aid)
-                vmess.network = vmessQRCode.net
-                vmess.headerType = vmessQRCode.type
-                vmess.requestHost = vmessQRCode.host
-                vmess.path = vmessQRCode.path
-                vmess.streamSecurity = vmessQRCode.tls
+                addShadowsocksServer(vmess, -1)
+            } else {
+                return R.string.toast_incorrect_protocol
             }
-
-            upgradeServerVersion(vmess)
-
-            addServer(vmess, -1)
         } catch (e: Exception) {
             e.printStackTrace()
             return -1
@@ -299,27 +349,37 @@ object AngConfigManager {
             if (index < 0 || index > angConfig.vmess.count() - 1) {
                 return ""
             }
-            if (angConfig.vmess[index].configType != 1) {
-                return ""
-            }
 
             val vmess = angConfig.vmess[index]
-            val vmessQRCode = VmessQRCode()
-            vmessQRCode.v = vmess.configVersion.toString()
-            vmessQRCode.ps = vmess.remarks
-            vmessQRCode.add = vmess.address
-            vmessQRCode.port = vmess.port.toString()
-            vmessQRCode.id = vmess.id
-            vmessQRCode.aid = vmess.alterId.toString()
-            vmessQRCode.net = vmess.network
-            vmessQRCode.type = vmess.headerType
-            vmessQRCode.host = vmess.requestHost
-            vmessQRCode.path = vmess.path
-            vmessQRCode.tls = vmess.streamSecurity
-            val json = Gson().toJson(vmessQRCode)
-            val conf = VMESS_PROTOCOL + Utils.encode(json)
+            if (angConfig.vmess[index].configType == AppConfig.EConfigType.Vmess) {
 
-            return conf
+                val vmessQRCode = VmessQRCode()
+                vmessQRCode.v = vmess.configVersion.toString()
+                vmessQRCode.ps = vmess.remarks
+                vmessQRCode.add = vmess.address
+                vmessQRCode.port = vmess.port.toString()
+                vmessQRCode.id = vmess.id
+                vmessQRCode.aid = vmess.alterId.toString()
+                vmessQRCode.net = vmess.network
+                vmessQRCode.type = vmess.headerType
+                vmessQRCode.host = vmess.requestHost
+                vmessQRCode.path = vmess.path
+                vmessQRCode.tls = vmess.streamSecurity
+                val json = Gson().toJson(vmessQRCode)
+                val conf = VMESS_PROTOCOL + Utils.encode(json)
+
+                return conf
+            } else if (angConfig.vmess[index].configType == AppConfig.EConfigType.Shadowsocks) {
+                val remark = "#" + Utils.urlEncode(vmess.remarks)
+                val url = String.format("%s:%s@%s:%s",
+                        vmess.security,
+                        vmess.id,
+                        vmess.address,
+                        vmess.port)
+                return SS_PROTOCOL + Utils.encode(url) + remark
+            } else {
+                return ""
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             return ""
@@ -402,7 +462,7 @@ object AngConfigManager {
             //add
             val vmess = AngConfig.VmessBean()
             vmess.configVersion = 2
-            vmess.configType = 2
+            vmess.configType = AppConfig.EConfigType.Custom
             vmess.guid = guid
             vmess.remarks = vmess.guid
 
@@ -499,5 +559,118 @@ object AngConfigManager {
             e.printStackTrace()
             return -1
         }
+    }
+
+
+    fun addCustomServer(vmess: AngConfig.VmessBean, index: Int): Int {
+        try {
+            vmess.configVersion = 2
+            vmess.configType = AppConfig.EConfigType.Custom
+
+            if (index >= 0) {
+                //edit
+                angConfig.vmess[index] = vmess
+            } else {
+                //add
+                vmess.guid = System.currentTimeMillis().toString()
+                angConfig.vmess.add(vmess)
+                if (angConfig.vmess.count() == 1) {
+                    angConfig.index = 0
+                }
+            }
+
+            storeConfigFile()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
+
+    fun addShadowsocksServer(vmess: AngConfig.VmessBean, index: Int): Int {
+        try {
+            vmess.configVersion = 2
+            vmess.configType = AppConfig.EConfigType.Shadowsocks
+
+            if (index >= 0) {
+                //edit
+                angConfig.vmess[index] = vmess
+            } else {
+                //add
+                vmess.guid = System.currentTimeMillis().toString()
+                angConfig.vmess.add(vmess)
+                if (angConfig.vmess.count() == 1) {
+                    angConfig.index = 0
+                }
+            }
+
+            storeConfigFile()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
+
+    fun importBatchConfig(server: String?, subid: String): Int {
+        try {
+            if (server == null) {
+                return 0
+            }
+            removeServerViaSubid(subid)
+
+            var servers = server
+            if (server.indexOf("vmess") >= 0 && server.indexOf("vmess") == server.lastIndexOf("vmess")) {
+                servers = server.replace("\n", "")
+            }
+
+            var count = 0
+            servers.lines()
+                    .forEach {
+                        val resId = importConfig(it, subid)
+                        if (resId == 0) {
+                            count++
+                        }
+                    }
+            return count
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return 0
+    }
+
+    fun saveSubItem(subItem: ArrayList<AngConfig.SubItemBean>): Int {
+        try {
+            if (subItem.count() <= 0) {
+                return -1
+            }
+            for (k in 0 until subItem.count()) {
+                if (TextUtils.isEmpty(subItem[k].id)) {
+                    subItem[k].id = Utils.getUuid()
+                }
+            }
+            angConfig.subItem = subItem
+
+            storeConfigFile()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
+
+    fun removeServerViaSubid(subid: String): Int {
+        if (TextUtils.isEmpty(subid) || configs.vmess.count() <= 0) {
+            return -1
+        }
+
+        for (k in configs.vmess.count() - 1 downTo 0) {
+            if (configs.vmess[k].subid.equals(subid)) {
+                angConfig.vmess.removeAt(k)
+            }
+        }
+
+        storeConfigFile()
+        return 0
     }
 }
