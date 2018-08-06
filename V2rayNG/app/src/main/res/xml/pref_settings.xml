@@ -21,6 +21,12 @@
             android:summary="@string/summary_pref_remote_dns"
             android:title="@string/title_pref_remote_dns" />
 
+        <EditTextPreference
+            android:defaultValue="0"
+            android:key="pref_lanconn_port"
+            android:summary="@string/summary_pref_lanconn_port"
+            android:title="@string/title_pref_lanconn_port" />
+
         <!--<CheckBoxPreference-->
             <!--android:key="pref_speedup_domain"-->
             <!--android:summary="@string/summary_pref_speedup_domain"-->

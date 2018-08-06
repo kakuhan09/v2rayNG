@@ -84,6 +84,9 @@
     <string name="title_pref_remote_dns">Remote DNS</string>
     <string name="summary_pref_remote_dns">Remote DNS</string>
 
+    <string name="title_pref_lanconn_port">LAN connection port(0=not allowed)</string>
+    <string name="summary_pref_lanconn_port">LAN connection port</string>
+
     <string name="title_pref_speedup_domain">Speedup domain name resolution</string>
     <string name="summary_pref_speedup_domain">Valid only for http/tls</string>
 

@@ -3,6 +3,7 @@ package com.v2ray.ang.dto
 data class V2rayConfig(val port: Int,
                        val log: LogBean,
                        val inbound: InboundBean,
+                       var inboundDetour: List<InboundDetourBean>?,
                        var outbound: OutboundBean,
                        val outboundDetour: List<OutboundDetourBean>,
                        val dns: DnsBean,
@@ -91,6 +92,16 @@ data class V2rayConfig(val port: Int,
 
     data class MuxBean(var enabled: Boolean)
 
+    data class InboundDetourBean(
+            var port: Int,
+            val listen: String,
+            val protocol: String,
+            val settings: InSettingsBean,
+            val domainOverride: List<String>) {
+
+        data class InSettingsBean(val auth: String,
+                                  val udp: Boolean)
+    }
 
     data class OutboundDetourBean(val protocol: String,
                                   var settings: OutboundDetourSettingsBean,

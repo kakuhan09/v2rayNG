@@ -15,6 +15,20 @@
       "tls"
     ]
   },
+  "inboundDetour": [{
+    "port": 18888,
+    "listen": "0.0.0.0",
+    "protocol": "http",
+    "settings": {
+      "auth": "noauth",
+      "udp": true,
+      "ip": "0.0.0.0"
+    },
+    "domainOverride": [
+      "http",
+      "tls"
+    ]
+  }],
   "outbound": {
     "tag": "agentout",
     "protocol": "vmess",

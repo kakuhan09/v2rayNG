@@ -612,17 +612,17 @@ object AngConfigManager {
         return 0
     }
 
-    fun importBatchConfig(server: String?, subid: String): Int {
+    fun importBatchConfig(servers: String?, subid: String): Int {
         try {
-            if (server == null) {
+            if (servers == null) {
                 return 0
             }
             removeServerViaSubid(subid)
 
-            var servers = server
-            if (server.indexOf("vmess") >= 0 && server.indexOf("vmess") == server.lastIndexOf("vmess")) {
-                servers = server.replace("\n", "")
-            }
+//            var servers = server
+//            if (server.indexOf("vmess") >= 0 && server.indexOf("vmess") == server.lastIndexOf("vmess")) {
+//                servers = server.replace("\n", "")
+//            }
 
             var count = 0
             servers.lines()

@@ -186,8 +186,13 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
 
     override fun onItemDismiss(position: Int) {
         if (configs.index != position) {
-            if (AngConfigManager.removeServer(position) == 0) {
-                notifyItemRemoved(position)
+            mActivity.alert(R.string.del_config_comfirm) {
+                positiveButton(android.R.string.ok) {
+                    if (AngConfigManager.removeServer(position) == 0) {
+                        notifyItemRemoved(position)
+                    }
+                }
+                show()
             }
         }
         notifyItemChanged(position)

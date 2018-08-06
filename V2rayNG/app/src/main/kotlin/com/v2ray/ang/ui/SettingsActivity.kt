@@ -26,6 +26,7 @@ class SettingsActivity : BaseActivity() {
         const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
         const val PREF_MUX_ENABLED = "pref_mux_enabled"
         const val PREF_REMOTE_DNS = "pref_remote_dns"
+        const val PREF_LANCONN_PORT = "pref_lanconn_port"
 //        const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
 
         const val PREF_ROUTING_MODE = "pref_routing_mode"
@@ -49,6 +50,7 @@ class SettingsActivity : BaseActivity() {
         val perAppProxy by lazy { findPreference(PREF_PER_APP_PROXY) as CheckBoxPreference }
         //        val autoRestart by lazy { findPreference(PREF_AUTO_RESTART) as CheckBoxPreference }
         val remoteDns by lazy { findPreference(PREF_REMOTE_DNS) as EditTextPreference }
+        val lanconnPort by lazy { findPreference(PREF_LANCONN_PORT) as EditTextPreference }
 
         val routing: Preference by lazy { findPreference(PREF_ROUTING) }
         val donate: Preference by lazy { findPreference(PREF_DONATE) }
@@ -97,6 +99,11 @@ class SettingsActivity : BaseActivity() {
                 true
             }
 
+            lanconnPort.setOnPreferenceChangeListener { preference, any ->
+                lanconnPort.summary = any as String
+                true
+            }
+
             version.summary = "${BuildConfig.VERSION_NAME} (${Libv2ray.checkVersionX()})"
         }
 
@@ -105,6 +112,7 @@ class SettingsActivity : BaseActivity() {
 
             perAppProxy.isChecked = defaultSharedPreferences.getBoolean(PREF_PER_APP_PROXY, false)
             remoteDns.summary = defaultSharedPreferences.getString(PREF_REMOTE_DNS, "")
+            lanconnPort.summary = defaultSharedPreferences.getString(PREF_LANCONN_PORT, "")
 
             defaultSharedPreferences.registerOnSharedPreferenceChangeListener(this)
         }

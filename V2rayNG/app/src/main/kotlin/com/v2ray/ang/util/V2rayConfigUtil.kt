@@ -76,7 +76,7 @@ object V2rayConfigUtil {
                     },
                     "domainOverride": ["http", "tls"]
                 }"""),
-                "inboundDetour" to JSONArray(),
+                //"inboundDetour" to JSONArray(),
                 "#lib2ray" to lib2rayObj,
                 "log" to JSONObject("""{
                     "loglevel": "warning"
@@ -144,6 +144,8 @@ object V2rayConfigUtil {
 //                return result
 //            }
 
+            inbound(config, v2rayConfig, app)
+
             //vmess协议服务器配置
             outbound(config, v2rayConfig, app)
 
@@ -196,6 +198,28 @@ object V2rayConfigUtil {
             e.printStackTrace()
             return result
         }
+    }
+
+    /**
+     *
+     */
+    private fun inbound(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+        try {
+            val lanconnPort = app.defaultDPreference.getPrefString(SettingsActivity.PREF_LANCONN_PORT, "")
+            val port = Utils.parseInt(lanconnPort)
+
+            if (port == 0) {
+                v2rayConfig.inboundDetour = null
+            } else {
+                if (v2rayConfig.inboundDetour!!.isNotEmpty()) {
+                    v2rayConfig.inboundDetour!!.get(0).port = port
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
     }
 
     /**

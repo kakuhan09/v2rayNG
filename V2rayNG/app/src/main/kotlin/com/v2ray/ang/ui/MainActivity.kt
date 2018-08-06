@@ -100,9 +100,10 @@ class MainActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-//        unbindService(mConnection)
-        unregisterReceiver(mMsgReceive)
-        mMsgReceive = null
+        if (mMsgReceive != null) {
+            unregisterReceiver(mMsgReceive)
+            mMsgReceive = null
+        }
     }
 
     public override fun onResume() {

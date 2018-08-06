@@ -15,7 +15,7 @@ class ScScannerActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.abc_list_menu_item_layout)
+        setContentView(R.layout.activity_none)
         importQRcode(REQUEST_SCAN)
     }
 

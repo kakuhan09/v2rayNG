@@ -83,6 +83,9 @@
     <string name="title_pref_remote_dns">远程DNS</string>
     <string name="summary_pref_remote_dns">远程DNS</string>
 
+    <string name="title_pref_lanconn_port">局域网的连接端口(0=不允许)</string>
+    <string name="summary_pref_lanconn_port">局域网的连接端口</string>
+
     <string name="title_pref_speedup_domain">加速域名解析</string>
     <string name="summary_pref_speedup_domain">直连解析,可能存在问题,http/tls有效</string>
 
