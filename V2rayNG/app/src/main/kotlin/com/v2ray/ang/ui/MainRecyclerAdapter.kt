@@ -67,13 +67,16 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
             }
 
             if (configType == AppConfig.EConfigType.Vmess) {
-                holder.statistics.text = "vmess  $address : $port"
+                holder.type.text = "vmess"
+                holder.statistics.text = "$address : $port"
                 holder.layout_share.visibility = View.VISIBLE
             } else if (configType == AppConfig.EConfigType.Custom) {
-                holder.statistics.text = mActivity.getString(R.string.server_customize_config)
+                holder.type.text = mActivity.getString(R.string.server_customize_config)
+                holder.statistics.text = ""//mActivity.getString(R.string.server_customize_config)
                 holder.layout_share.visibility = View.INVISIBLE
             } else if (configType == AppConfig.EConfigType.Shadowsocks) {
-                holder.statistics.text = "ss  $address : $port"
+                holder.type.text = "ss"
+                holder.statistics.text = "$address : $port"
                 holder.layout_share.visibility = View.VISIBLE
             }
 
@@ -168,6 +171,7 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
         val subid = itemView.tv_subid
         val radio = itemView.btn_radio!!
         val name = itemView.tv_name!!
+        val type = itemView.tv_type!!
         val statistics = itemView.tv_statistics!!
         val infoContainer = itemView.info_container!!
         val layout_edit = itemView.layout_edit!!

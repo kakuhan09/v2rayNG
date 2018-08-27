@@ -18,6 +18,7 @@ import libv2ray.Libv2ray
 import org.jetbrains.anko.act
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.toast
 
 class SettingsActivity : BaseActivity() {
     companion object {
@@ -25,6 +26,7 @@ class SettingsActivity : BaseActivity() {
         //        const val PREF_START_ON_BOOT = "pref_start_on_boot"
         const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
         const val PREF_MUX_ENABLED = "pref_mux_enabled"
+        const val PREF_SPEED_ENABLED = "pref_speed_enabled"
         const val PREF_REMOTE_DNS = "pref_remote_dns"
         const val PREF_LANCONN_PORT = "pref_lanconn_port"
 //        const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
@@ -85,7 +87,12 @@ class SettingsActivity : BaseActivity() {
             tgGroup.onClick {
                 //                Utils.openUri(activity, "https://t.me/v2rayN")
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg:resolve?domain=v2rayN"))
-                startActivity(intent)
+                try {
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    toast(R.string.toast_tg_app_not_found)
+                }
             }
 
             perAppProxy.setOnPreferenceClickListener {

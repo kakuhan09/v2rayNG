@@ -15,6 +15,11 @@
             android:summary="@string/summary_pref_mux_enabled"
             android:title="@string/title_pref_mux_enabled" />
 
+        <CheckBoxPreference
+            android:key="pref_speed_enabled"
+            android:summary="@string/summary_pref_speed_enabled"
+            android:title="@string/title_pref_speed_enabled" />
+
         <EditTextPreference
             android:defaultValue="8.8.8.8,8.8.4.4"
             android:key="pref_remote_dns"

@@ -39,6 +39,7 @@
     <string name="server_lab_request_host">伪装域名host(host/ws host/h2 host)</string>
     <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">底层传输安全</string>
+    <string name="server_lab_allow_insecure">allowInsecure</string>
     <string name="server_lab_address3">服务器地址</string>
     <string name="server_lab_port3">服务器端口</string>
     <string name="server_lab_id3">密码</string>
@@ -73,6 +74,9 @@
     <string name="title_pref_mux_enabled">开启Mux多路复用</string>
     <string name="summary_pref_mux_enabled">开启可能会加速,关闭可能会减少断流</string>
 
+    <string name="title_pref_speed_enabled">开启速度显示</string>
+    <string name="summary_pref_speed_enabled">在通知中显示当前速度</string>
+
     <string name="title_pref_routing">路由</string>
     <string name="summary_pref_routing">自定义路由</string>
 
@@ -92,6 +96,7 @@
     <string name="title_pref_feedback">反馈</string>
     <string name="summary_pref_feedback">反馈改进或漏洞至 GitHub</string>
     <string name="summary_pref_tg_group">加入Telegram Group</string>
+    <string name="toast_tg_app_not_found">未找到Telegram app</string>
 
     <string name="title_pref_version">版本</string>
 

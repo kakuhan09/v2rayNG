@@ -673,4 +673,42 @@ object AngConfigManager {
         storeConfigFile()
         return 0
     }
+
+    fun addSubItem(subItem: AngConfig.SubItemBean, index: Int): Int {
+        try {
+            if (index >= 0) {
+                //edit
+                angConfig.subItem[index] = subItem
+            } else {
+                //add
+                angConfig.subItem.add(subItem)
+            }
+
+            saveSubItem(angConfig.subItem)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
+
+    /**
+     *
+     */
+    fun removeSubItem(index: Int): Int {
+        try {
+            if (index < 0 || index > angConfig.subItem.count() - 1) {
+                return -1
+            }
+
+            //删除
+            angConfig.subItem.removeAt(index)
+
+            storeConfigFile()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
 }

@@ -39,6 +39,7 @@
     <string name="server_lab_request_host">request host(host/ws host/h2 host)</string>
     <string name="server_lab_path">path(ws path/h2 path)</string>
     <string name="server_lab_stream_security">tls</string>
+    <string name="server_lab_allow_insecure">allowInsecure</string>
     <string name="server_lab_address3">address</string>
     <string name="server_lab_port3">port</string>
     <string name="server_lab_id3">password</string>
@@ -74,6 +75,9 @@
     <string name="title_pref_mux_enabled">Enable Mux</string>
     <string name="summary_pref_mux_enabled">Enable maybe speed up network and switch network maybe flash</string>
 
+    <string name="title_pref_speed_enabled">Enable speed display</string>
+    <string name="summary_pref_speed_enabled">Display current speed in the notification</string>
+
     <string name="title_pref_routing">Routing</string>
     <string name="summary_pref_routing">Custom routing</string>
 
@@ -93,6 +97,7 @@
     <string name="title_pref_feedback">Feedback</string>
     <string name="summary_pref_feedback">Feedback enhancements or bugs to GitHub</string>
     <string name="summary_pref_tg_group">Join Telegram Group</string>
+    <string name="toast_tg_app_not_found">Telegram app not found</string>
 
     <string name="title_pref_version">Version</string>
 

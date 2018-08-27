@@ -16,7 +16,9 @@ import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.dto.VpnBandwidth
 import com.v2ray.ang.extension.defaultDPreference
+import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.MainActivity
 import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
@@ -26,7 +28,11 @@ import com.v2ray.ang.util.Utils
 import libv2ray.Libv2ray
 import libv2ray.V2RayCallbacks
 import libv2ray.V2RayVPNServiceSupportsSet
+import org.jetbrains.anko.sp
+import rx.Observable
+import rx.Subscription
 import java.io.FileDescriptor
+import java.io.FileInputStream
 import java.io.PrintWriter
 import java.lang.ref.SoftReference
 
@@ -54,6 +60,10 @@ class V2RayVpnService : VpnService() {
     private lateinit var mInterface: ParcelFileDescriptor
     val fd: Int get() = mInterface.fd
     private var currentTimeMillis: Long = 0
+    private var mBuilder: NotificationCompat.Builder? = null
+    private var mSubscription: Subscription? = null
+    private var lastVpnBandwidth: VpnBandwidth? = null
+    private var mNotificationManager: NotificationManager? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -123,6 +133,20 @@ class V2RayVpnService : VpnService() {
         mInterface = builder.establish()
         //Logger.d("VPNService", "New interface: " + parameters)
         //Logger.d(Libv2ray.checkVersionX())
+
+
+        if (defaultDPreference.getPrefBoolean(SettingsActivity.PREF_SPEED_ENABLED, false)) {
+            mSubscription = Observable.interval(3, java.util.concurrent.TimeUnit.SECONDS)
+                    .subscribe {
+                        vpnBandwidth?.let {
+                            lastVpnBandwidth?.let { last ->
+                                val speed = it - last
+                                updateNotification("${(speed.txByte / 3).toSpeedString()} ↑  ${(speed.rxByte / 3).toSpeedString()} ↓")
+                            }
+                            lastVpnBandwidth = it
+                        }
+                    }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -265,7 +289,7 @@ class V2RayVpnService : VpnService() {
                     ""
                 }
 
-        val notification = NotificationCompat.Builder(applicationContext, channelId)
+        mBuilder = NotificationCompat.Builder(applicationContext, channelId)
                 .setSmallIcon(R.drawable.ic_v)
                 .setContentTitle(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
                 .setContentText(getString(R.string.notification_action_more))
@@ -274,9 +298,11 @@ class V2RayVpnService : VpnService() {
                 .addAction(R.drawable.ic_close_grey_800_24dp,
                         getString(R.string.notification_action_stop_v2ray),
                         stopV2RayPendingIntent)
-                .build()
+        //.build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        mBuilder?.setDefaults(NotificationCompat.FLAG_ONLY_ALERT_ONCE)  //取消震动,铃声其他都不好使
+
+        startForeground(NOTIFICATION_ID, mBuilder?.build())
 
 //        if (netWorkStateReceiver == null) {
 //            netWorkStateReceiver = NetWorkStateReceiver()
@@ -293,14 +319,48 @@ class V2RayVpnService : VpnService() {
         chan.lightColor = Color.DKGRAY
         chan.importance = NotificationManager.IMPORTANCE_NONE
         chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        service.createNotificationChannel(chan)
+        getNotificationManager().createNotificationChannel(chan)
         return channelId
     }
 
     private fun cancelNotification() {
         stopForeground(true)
+        mBuilder = null
+        mSubscription?.unsubscribe()
+        mSubscription = null
     }
+
+    private fun updateNotification(contentText: String) {
+        if (mBuilder != null) {
+            mBuilder?.setContentText(contentText)
+            getNotificationManager().notify(NOTIFICATION_ID, mBuilder?.build())
+        }
+    }
+
+    private fun getNotificationManager(): NotificationManager {
+        if (mNotificationManager == null) {
+            mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        }
+        return mNotificationManager!!
+    }
+
+    private val vpnBandwidth: VpnBandwidth?
+        get() = FileInputStream("/proc/net/dev").bufferedReader().use {
+            val prefix = "tun0:"
+            while (true) {
+                val line = it.readLine().trim()
+                if (line.startsWith(prefix)) {
+                    val numbers = line.substring(prefix.length).split(' ')
+                            .filter(String::isNotEmpty)
+                            .map(String::toLong)
+                    if (numbers.size > 10)
+                        return VpnBandwidth(numbers[0], numbers[8])
+                    break
+                }
+            }
+            return null
+        }
+
 
     private inner class V2RayCallback : V2RayCallbacks, V2RayVPNServiceSupportsSet {
         override fun shutdown() = 0L
