@@ -10,10 +10,13 @@
       "auth": "noauth",
       "udp": true
     },
-    "domainOverride": [
-      "http",
-      "tls"
-    ]
+    "sniffing": {
+      "enabled": true,
+      "destOverride": [
+        "http",
+        "tls"
+      ]
+    }
   },
   "inboundDetour": [{
     "port": 18888,
@@ -24,13 +27,16 @@
       "udp": true,
       "ip": "0.0.0.0"
     },
-    "domainOverride": [
-      "http",
-      "tls"
-    ]
+    "sniffing": {
+      "enabled": true,
+      "destOverride": [
+        "http",
+        "tls"
+      ]
+    }
   }],
   "outbound": {
-    "tag": "agentout",
+    "tag": "proxyout",
     "protocol": "vmess",
     "settings": {
       "vnext": [
@@ -68,7 +74,7 @@
     {
       "protocol": "freedom",
       "settings": {},
-      "tag": "direct"
+      "tag": "directout"
     },
     {
       "protocol": "blackhole",
@@ -99,7 +105,7 @@
           "ip": [
             "0.0.0.0/8"
           ],
-          "outboundTag": "direct"
+          "outboundTag": "directout"
         },
         {
           "type": "field",
@@ -122,7 +128,7 @@
             "fc00::/7",
             "fe80::/10"
           ],
-          "outboundTag": "direct"
+          "outboundTag": "directout"
         }
       ]
     }

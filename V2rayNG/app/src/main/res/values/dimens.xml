@@ -6,4 +6,5 @@
     <dimen name="edit_height">50dp</dimen>
     <dimen name="png_height">24dp</dimen>
     <dimen name="server_height">72dp</dimen>
+    <dimen name="connection_test_height">60dp</dimen>
 </resources>

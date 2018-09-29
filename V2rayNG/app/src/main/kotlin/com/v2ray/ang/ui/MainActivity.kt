@@ -28,7 +28,7 @@ import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import com.v2ray.ang.helper.SimpleItemTouchHelperCallback
-
+import kotlinx.android.synthetic.main.activity_server3.*
 
 class MainActivity : BaseActivity() {
     companion object {
@@ -67,6 +67,19 @@ class MainActivity : BaseActivity() {
                 } else {
                     startActivityForResult(intent, REQUEST_CODE_VPN_PREPARE)
                 }
+            }
+        }
+        layout_test.setOnClickListener {
+            if (isRunning) {
+                tv_test_state.text = getString(R.string.connection_test_testing)
+                doAsync {
+                    val result = Utils.testConnection(this@MainActivity)
+                    uiThread {
+                        tv_test_state.text = Utils.getEditable(result)
+                    }
+                }
+            } else {
+                tv_test_state.text = getString(R.string.connection_test_fail)
             }
         }
 

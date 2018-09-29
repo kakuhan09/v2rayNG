@@ -24,8 +24,8 @@ object AppConfig {
     const val PREF_V2RAY_ROUTING_AGENT = "pref_v2ray_routing_agent"
     const val PREF_V2RAY_ROUTING_DIRECT = "pref_v2ray_routing_direct"
     const val PREF_V2RAY_ROUTING_BLOCKED = "pref_v2ray_routing_blocked"
-    const val TAG_AGENT = "agentout"
-    const val TAG_DIRECT = "direct"
+    const val TAG_AGENT = "proxyout"
+    const val TAG_DIRECT = "directout"
     const val TAG_BLOCKED = "blockout"
 
     const val MSG_REGISTER_CLIENT = 1

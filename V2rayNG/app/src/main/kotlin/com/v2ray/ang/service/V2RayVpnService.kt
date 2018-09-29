@@ -14,6 +14,7 @@ import android.net.VpnService
 import android.os.*
 import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
+import android.util.Log
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.VpnBandwidth
@@ -250,8 +251,9 @@ class V2RayVpnService : VpnService() {
 //
 //            val path2 = AssetsUtil.getAssetPath(this, "geosite.dat")
 //            Libv2ray.setAssetsOverride("geosite.dat", path2)
+            Log.d("restartV2Ray", "restartV2Ray")
 
-            stopV2Ray(false)
+            //stopV2Ray(false)
             startV2ray(true)
         } catch (e: Exception) {
         }
@@ -344,21 +346,46 @@ class V2RayVpnService : VpnService() {
         return mNotificationManager!!
     }
 
+//    private val vpnBandwidth: VpnBandwidth?
+//        get() = FileInputStream("/proc/net/dev").bufferedReader().use {
+//            val prefix = "tun0:"
+//            while (true) {
+//                val line = it.readLine().trim()
+//                if (line.startsWith(prefix)) {
+//                    val numbers = line.substring(prefix.length).split(' ')
+//                            .filter(String::isNotEmpty)
+//                            .map(String::toLong)
+//                    if (numbers.size > 10)
+//                        return VpnBandwidth(numbers[0], numbers[8])
+//                    break
+//                }
+//            }
+//            return null
+//        }
+
     private val vpnBandwidth: VpnBandwidth?
-        get() = FileInputStream("/proc/net/dev").bufferedReader().use {
-            val prefix = "tun0:"
-            while (true) {
-                val line = it.readLine().trim()
-                if (line.startsWith(prefix)) {
-                    val numbers = line.substring(prefix.length).split(' ')
-                            .filter(String::isNotEmpty)
-                            .map(String::toLong)
-                    if (numbers.size > 10)
-                        return VpnBandwidth(numbers[0], numbers[8])
-                    break
+        get() {
+            try {
+                val netDev = FileInputStream("/proc/net/dev").bufferedReader()
+                var bandWidth: VpnBandwidth? = null
+                val prefix = "tun0:"
+                while (true) {
+                    val line = netDev.readLine().trim()
+                    if (line.startsWith(prefix)) {
+                        val numbers = line.substring(prefix.length).split(' ')
+                                .filter(String::isNotEmpty)
+                                .map(String::toLong)
+                        if (numbers.size > 10)
+                            bandWidth = VpnBandwidth(numbers[0], numbers[8])
+                        break
+                    }
                 }
+                netDev.close()
+                return bandWidth
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return null
             }
-            return null
         }
 
 

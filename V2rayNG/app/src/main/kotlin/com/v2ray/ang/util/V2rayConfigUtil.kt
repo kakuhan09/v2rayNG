@@ -74,7 +74,13 @@ object V2rayConfigUtil {
                         "auth": "noauth",
                         "udp": true
                     },
-                    "domainOverride": ["http", "tls"]
+                    "sniffing": {
+                        "enabled": true,
+                        "destOverride": [
+                            "http",
+                            "tls"
+                        ]
+                    }
                 }"""),
                 //"inboundDetour" to JSONArray(),
                 "#lib2ray" to lib2rayObj,
@@ -84,7 +90,7 @@ object V2rayConfigUtil {
         )
     }
     private val ruleDirectDnsObj: JSONObject by lazy {
-        JSONObject("""{"type":"field","port":53,"network":"udp","outboundTag":"direct"}""")
+        JSONObject("""{"type":"field","port":53,"network":"udp","outboundTag":"directout"}""")
     }
 
     data class Result(var status: Boolean, var content: String)

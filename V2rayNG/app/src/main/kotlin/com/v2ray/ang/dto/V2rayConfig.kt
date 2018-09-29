@@ -15,12 +15,16 @@ data class V2rayConfig(val port: Int,
 
     data class InboundBean(
             val listen: String,
+            //val port: Int,
             val protocol: String,
             val settings: InSettingsBean,
-            val domainOverride: List<String>) {
+            val sniffing: SniffingBean) {
 
         data class InSettingsBean(val auth: String,
                                   val udp: Boolean)
+
+        data class SniffingBean(val enabled: Boolean,
+                                val destOverride: List<String>)
     }
 
     data class OutboundBean(val tag: String,
@@ -97,10 +101,13 @@ data class V2rayConfig(val port: Int,
             val listen: String,
             val protocol: String,
             val settings: InSettingsBean,
-            val domainOverride: List<String>) {
+            val sniffing: SniffingBean) {
 
         data class InSettingsBean(val auth: String,
                                   val udp: Boolean)
+
+        data class SniffingBean(val enabled: Boolean,
+                                val destOverride: List<String>)
     }
 
     data class OutboundDetourBean(val protocol: String,

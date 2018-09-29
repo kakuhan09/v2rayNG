@@ -17,7 +17,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_qrcode.view.*
 import kotlinx.android.synthetic.main.item_recycler_main.view.*
 import org.jetbrains.anko.*
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<MainRecyclerAdapter.BaseViewHolder>()
         , ItemTouchHelperAdapter {
@@ -126,9 +129,14 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
                 if (changeable) {
                     AngConfigManager.setActiveServer(position)
                 } else {
-                    AngConfigManager.setActiveServer(position)
                     mActivity.showCircle()
-                    Utils.startVService(mActivity)
+                    Utils.stopVService(mActivity)
+                    Observable.timer(1500, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe {
+                                AngConfigManager.setActiveServer(position)
+                                Utils.startVService(mActivity)
+                            }
 
                 }
                 notifyDataSetChanged()
@@ -190,14 +198,14 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
 
     override fun onItemDismiss(position: Int) {
         if (configs.index != position) {
-            mActivity.alert(R.string.del_config_comfirm) {
-                positiveButton(android.R.string.ok) {
+//            mActivity.alert(R.string.del_config_comfirm) {
+//                positiveButton(android.R.string.ok) {
                     if (AngConfigManager.removeServer(position) == 0) {
                         notifyItemRemoved(position)
                     }
-                }
-                show()
-            }
+//                }
+//                show()
+//            }
         }
         notifyItemChanged(position)
     }

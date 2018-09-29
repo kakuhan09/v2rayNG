@@ -15,17 +15,20 @@ import android.app.ActivityManager
 import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.text.TextUtils
+import android.util.Log
 import android.util.Patterns
 import android.webkit.URLUtil
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.extension.responseLength
 import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.ui.SettingsActivity
 import me.dozen.dpreference.DPreference
 import org.jetbrains.anko.toast
-import java.net.URLDecoder
-import java.net.URLEncoder
+import java.io.IOException
+import java.net.*
 
 
 object Utils {
@@ -322,6 +325,52 @@ object Utils {
             e.printStackTrace()
             return url
         }
+    }
+
+    /**
+     * Based on: https://android.googlesource.com/platform/frameworks/base/+/b19a838/services/core/java/com/android/server/connectivity/NetworkMonitor.java#1071
+     */
+    fun testConnection(context: Context): String {
+        var result: String
+        var conn: HttpURLConnection? = null
+
+        try {
+            val url = URL("https",
+                    "www.google.com",
+                    "/generate_204")
+//        Log.d("testConnection", "222222222222")
+
+            conn = url.openConnection(Proxy(Proxy.Type.SOCKS,
+                    InetSocketAddress("127.0.0.1", 10808)))
+                    as HttpURLConnection
+//        Log.d("testConnection", "333333333333")
+
+            conn.connectTimeout = 30000
+            conn.readTimeout = 30000
+            conn.setRequestProperty("Connection", "close")
+            conn.instanceFollowRedirects = false
+            conn.useCaches = false
+//        Log.d("testConnection", "444444444444")
+
+
+            val start = SystemClock.elapsedRealtime()
+            val code = conn.responseCode
+            val elapsed = SystemClock.elapsedRealtime() - start
+
+            if (code == 204 || code == 200 && conn.responseLength == 0L) {
+                result = context.getString(R.string.connection_test_available, elapsed)
+            } else {
+                throw IOException(context.getString(R.string.connection_test_error_status_code, code))
+            }
+        } catch (e: IOException) {
+            result = context.getString(R.string.connection_test_error, e.message)
+        } catch (e: Exception) {
+            result = context.getString(R.string.connection_test_error, e.message)
+        } finally {
+            conn?.disconnect()
+        }
+
+        return result
     }
 }
 

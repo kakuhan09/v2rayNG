@@ -127,6 +127,13 @@
     <string name="routing_settings_scan_replace">Scan and replace</string>
     <string name="routing_settings_scan_append">Scan and append</string>
 
+    <string name="connection_test_pending">Check Connectivity</string>
+    <string name="connection_test_testing">Testing…</string>
+    <string name="connection_test_available">Success: HTTPS handshake took %dms</string>
+    <string name="connection_test_error">Fail to detect internet connection: %s</string>
+    <string name="connection_test_fail">Internet Unavailable</string>
+    <string name="connection_test_error_status_code">Error code: #%d</string>
+
     <string-array name="share_method">
         <item>QRcode</item>
         <item>Export to clipboard</item>

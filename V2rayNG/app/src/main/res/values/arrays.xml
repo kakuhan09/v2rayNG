@@ -31,6 +31,7 @@
         <item>utp</item>
         <item>wechat-video</item>
         <item>dtls</item>
+        <item>wireguard</item>
     </string-array>
 
     <string-array name="headertypetcps" translatable="false">
@@ -44,6 +45,7 @@
         <item>utp</item>
         <item>wechat-video</item>
         <item>dtls</item>
+        <item>wireguard</item>
     </string-array>
 
     <string-array name="streamsecuritys" translatable="false">

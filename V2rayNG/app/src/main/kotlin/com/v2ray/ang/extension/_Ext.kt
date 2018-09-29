@@ -1,9 +1,11 @@
 package com.v2ray.ang.extension
 
 import android.content.Context
+import android.os.Build
 import com.v2ray.ang.AngApplication
 import me.dozen.dpreference.DPreference
 import org.json.JSONObject
+import java.net.URLConnection
 
 /**
  * Some extensions
@@ -57,3 +59,6 @@ private fun Float.toShortString(): String {
         return s
     return s.substring(0, 4).removeSuffix(".")
 }
+
+val URLConnection.responseLength: Long
+    get() = if (Build.VERSION.SDK_INT >= 24) contentLengthLong else contentLength.toLong()
