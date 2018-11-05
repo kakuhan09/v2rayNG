@@ -43,10 +43,10 @@ class MainActivity : BaseActivity() {
             field = value
             adapter.changeable = !value
             if (value) {
-                fab.imageResource = R.drawable.ic_start_connected
+                fab.imageResource = R.drawable.ic_v
                 hideCircle()
             } else {
-                fab.imageResource = R.drawable.ic_start_idle
+                fab.imageResource = R.drawable.ic_v_idle
             }
         }
 

@@ -83,7 +83,7 @@
 
         <service
             android:name=".service.QSTileService"
-            android:icon="@drawable/ic_start_busy"
+            android:icon="@drawable/ic_v"
             android:label="@string/app_tile_name"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>

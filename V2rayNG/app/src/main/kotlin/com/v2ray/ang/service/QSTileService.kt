@@ -26,11 +26,11 @@ class QSTileService : TileService() {
         if (state == Tile.STATE_INACTIVE) {
             qsTile?.state = Tile.STATE_INACTIVE
             qsTile?.label = getString(R.string.app_name)
-            qsTile?.icon = Icon.createWithResource(applicationContext, R.drawable.ic_start_idle)
+            qsTile?.icon = Icon.createWithResource(applicationContext, R.drawable.ic_v_idle)
         } else if (state == Tile.STATE_ACTIVE) {
             qsTile?.state = Tile.STATE_ACTIVE
             qsTile?.label = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, "NG")
-            qsTile?.icon = Icon.createWithResource(applicationContext, R.drawable.ic_start_connected)
+            qsTile?.icon = Icon.createWithResource(applicationContext, R.drawable.ic_v)
         }
 
 
