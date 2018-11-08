@@ -34,7 +34,8 @@
                     android:id="@+id/tv_test_state"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:lines="1"
+                    android:minLines="1"
+                    android:maxLines="2"
                     android:paddingStart="16dp"
                     android:text="@string/connection_test_pending"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
@@ -60,7 +61,6 @@
                 android:layout_gravity="bottom|end"
                 android:layout_margin="20dp"
                 android:src="@drawable/ic_v_idle"
-                app:backgroundTint="@color/fab_orange_bright"
                 app:layout_anchorGravity="bottom|right|end" />
 
         </com.github.jorgecastilloprz.FABProgressCircle>

@@ -44,9 +44,11 @@ class MainActivity : BaseActivity() {
             adapter.changeable = !value
             if (value) {
                 fab.imageResource = R.drawable.ic_v
+                tv_test_state.text = getString(R.string.connection_connected)
                 hideCircle()
             } else {
                 fab.imageResource = R.drawable.ic_v_idle
+                tv_test_state.text = getString(R.string.connection_not_connected)
             }
         }
 
@@ -79,7 +81,7 @@ class MainActivity : BaseActivity() {
                     }
                 }
             } else {
-                tv_test_state.text = getString(R.string.connection_test_fail)
+//                tv_test_state.text = getString(R.string.connection_test_fail)
             }
         }
 
@@ -223,11 +225,11 @@ class MainActivity : BaseActivity() {
      * import config from qrcode
      */
     fun importQRcode(requestCode: Int): Boolean {
-        try {
-            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
-        } catch (e: Exception) {
+//        try {
+//            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
+//                    .addCategory(Intent.CATEGORY_DEFAULT)
+//                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
+//        } catch (e: Exception) {
             RxPermissions(this)
                     .request(Manifest.permission.CAMERA)
                     .subscribe {
@@ -236,7 +238,7 @@ class MainActivity : BaseActivity() {
                         else
                             toast(R.string.toast_permission_denied)
                     }
-        }
+//        }
         return true
     }
 

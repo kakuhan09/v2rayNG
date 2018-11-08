@@ -164,7 +164,7 @@ object V2rayConfigUtil {
             //增加lib2ray
             val finalConfig = addLib2ray(v2rayConfig, app)
 
-            Log.d("config", finalConfig)
+            //Log.d("config", finalConfig)
 
             result.status = true
             result.content = finalConfig
@@ -248,7 +248,7 @@ object V2rayConfigUtil {
                     user?.security = vmess.security
 
                     //Mux
-                    val muxEnabled = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
+                    val muxEnabled = false//app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
                     v2rayConfig.outbound.mux.enabled = muxEnabled
 
                     //远程服务器底层传输配置
@@ -409,27 +409,27 @@ object V2rayConfigUtil {
             when (routingMode) {
                 "0" -> {
                 }
-                "1" -> {
+                "1", "2" -> {
                     routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
                     routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
                 }
-                "2" -> {
-                    routingGeo("", "custom:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
-                    routingGeo("", "surge:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
-
-                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
-                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-
-                    routingGeo("", "custom:proxy", AppConfig.TAG_AGENT, v2rayConfig)
-                    routingGeo("", "surge:proxy", AppConfig.TAG_AGENT, v2rayConfig)
-                    routingGeo("domain", "gfwlist:proxy", AppConfig.TAG_AGENT, v2rayConfig)
-                }
+//                "2" -> {
+//                    routingGeo("", "custom:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
+//                    routingGeo("", "surge:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
+//
+//                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
+//                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+//
+//                    routingGeo("", "custom:proxy", AppConfig.TAG_AGENT, v2rayConfig)
+//                    routingGeo("", "surge:proxy", AppConfig.TAG_AGENT, v2rayConfig)
+//                    routingGeo("domain", "gfwlist:proxy", AppConfig.TAG_AGENT, v2rayConfig)
+//                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

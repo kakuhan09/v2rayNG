@@ -78,11 +78,11 @@ class RoutingSettingsFragment : Fragment() {
     }
 
     fun scanQRcode(requestCode: Int): Boolean {
-        try {
-            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
-        } catch (e: Exception) {
+//        try {
+//            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
+//                    .addCategory(Intent.CATEGORY_DEFAULT)
+//                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
+//        } catch (e: Exception) {
             RxPermissions(activity!!)
                     .request(Manifest.permission.CAMERA)
                     .subscribe {
@@ -91,7 +91,7 @@ class RoutingSettingsFragment : Fragment() {
                         else
                             activity?.toast(R.string.toast_permission_denied)
                     }
-        }
+//        }
         return true
     }
 

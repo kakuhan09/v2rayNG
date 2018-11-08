@@ -10,10 +10,10 @@
             android:summary="@string/summary_pref_per_app_proxy"
             android:title="@string/title_pref_per_app_proxy" />
 
-        <CheckBoxPreference
-            android:key="pref_mux_enabled"
-            android:summary="@string/summary_pref_mux_enabled"
-            android:title="@string/title_pref_mux_enabled" />
+        <!--<CheckBoxPreference-->
+            <!--android:key="pref_mux_enabled"-->
+            <!--android:summary="@string/summary_pref_mux_enabled"-->
+            <!--android:title="@string/title_pref_mux_enabled" />-->
 
         <CheckBoxPreference
             android:key="pref_speed_enabled"
@@ -70,9 +70,9 @@
             android:summary="@string/summary_pref_feedback"
             android:title="@string/title_pref_feedback" />
 
-        <Preference
-            android:key="pref_tg_group"
-            android:title="@string/summary_pref_tg_group" />
+        <!--<Preference-->
+            <!--android:key="pref_tg_group"-->
+            <!--android:title="@string/summary_pref_tg_group" />-->
 
         <Preference
             android:key="pref_version"

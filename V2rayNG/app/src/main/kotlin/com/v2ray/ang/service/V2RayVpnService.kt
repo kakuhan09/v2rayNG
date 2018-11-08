@@ -296,13 +296,16 @@ class V2RayVpnService : VpnService() {
                 .setContentTitle(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
                 .setContentText(getString(R.string.notification_action_more))
                 .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setOngoing(true)
+                .setShowWhen(false)
+                .setOnlyAlertOnce(true)
                 .setContentIntent(contentPendingIntent)
                 .addAction(R.drawable.ic_close_grey_800_24dp,
                         getString(R.string.notification_action_stop_v2ray),
                         stopV2RayPendingIntent)
         //.build()
 
-        mBuilder?.setDefaults(NotificationCompat.FLAG_ONLY_ALERT_ONCE)  //取消震动,铃声其他都不好使
+        //mBuilder?.setDefaults(NotificationCompat.FLAG_ONLY_ALERT_ONCE)  //取消震动,铃声其他都不好使
 
         startForeground(NOTIFICATION_ID, mBuilder?.build())
 

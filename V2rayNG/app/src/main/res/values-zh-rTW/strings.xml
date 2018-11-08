@@ -133,6 +133,8 @@
     <string name="connection_test_error">"偵測出網際網路連線失敗: %s"</string>
     <string name="connection_test_fail">"無法使用網際網路"</string>
     <string name="connection_test_error_status_code">"錯誤碼: （#%d）"</string>
+    <string name="connection_connected">"已連線，輕觸以檢查連線能力"</string>
+    <string name="connection_not_connected">"未連線"</string>
 
     <string-array name="share_method">
         <item>QR 碼</item>
@@ -148,7 +150,7 @@
     <string-array name="routing_mode">
         <item>全球</item>
         <item>略過中國大陸</item>
-        <item>Geo 家族</item>
+        <!--<item>Geo 家族</item>-->
     </string-array>
 
 </resources>

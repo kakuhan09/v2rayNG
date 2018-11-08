@@ -341,7 +341,7 @@ object Utils {
 //        Log.d("testConnection", "222222222222")
 
             conn = url.openConnection(Proxy(Proxy.Type.SOCKS,
-                    InetSocketAddress("127.0.0.1", 10808)))
+                    InetSocketAddress("localhost", 10808)))
                     as HttpURLConnection
 //        Log.d("testConnection", "333333333333")
 
