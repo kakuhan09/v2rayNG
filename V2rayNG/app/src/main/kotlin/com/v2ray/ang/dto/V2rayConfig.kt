@@ -1,22 +1,19 @@
 package com.v2ray.ang.dto
 
-data class V2rayConfig(val port: Int,
-                       val log: LogBean,
-                       val inbound: InboundBean,
-                       var inboundDetour: List<InboundDetourBean>?,
-                       var outbound: OutboundBean,
-                       val outboundDetour: List<OutboundDetourBean>,
-                       val dns: DnsBean,
-                       val routing: RoutingBean) {
+data class V2rayConfig(
+        val log: LogBean,
+        //val inbounds: ArrayList<InboundBean>,
+        var outbounds: ArrayList<OutboundBean>,
+        var dns: DnsBean,
+        val routing: RoutingBean) {
 
     data class LogBean(val access: String,
                        val error: String,
                        val loglevel: String)
 
     data class InboundBean(
-            val listen: String,
-            //val port: Int,
-            val protocol: String,
+            var port: Int,
+            var protocol: String,
             val settings: InSettingsBean,
             val sniffing: SniffingBean) {
 
@@ -34,7 +31,8 @@ data class V2rayConfig(val port: Int,
                             var mux: MuxBean) {
 
         data class OutSettingsBean(var vnext: List<VnextBean>?,
-                                   var servers: List<ServersBean>?) {
+                                   var servers: List<ServersBean>?,
+                                   var response: Response) {
 
             data class VnextBean(var address: String,
                                  var port: Int,
@@ -52,6 +50,7 @@ data class V2rayConfig(val port: Int,
                                    var port: Int,
                                    var level: Int)
 
+            data class Response(var type: String)
         }
 
         data class StreamSettingsBean(var network: String,
@@ -92,33 +91,16 @@ data class V2rayConfig(val port: Int,
             data class TlssettingsBean(var allowInsecure: Boolean = true,
                                        var serverName: String = "")
         }
+
+        data class MuxBean(var enabled: Boolean)
     }
 
-    data class MuxBean(var enabled: Boolean)
-
-    data class InboundDetourBean(
-            var port: Int,
-            val listen: String,
-            val protocol: String,
-            val settings: InSettingsBean,
-            val sniffing: SniffingBean) {
-
-        data class InSettingsBean(val auth: String,
-                                  val udp: Boolean)
-
-        data class SniffingBean(val enabled: Boolean,
-                                val destOverride: List<String>)
+    //data class DnsBean(var servers: List<String>)
+    data class DnsBean(var servers: List<Any>) {
+        data class ServersBean(var address: String = "",
+                               var port: Int = 0,
+                               var domains: List<String> = ArrayList<String>())
     }
-
-    data class OutboundDetourBean(val protocol: String,
-                                  var settings: OutboundDetourSettingsBean,
-                                  val tag: String) {
-        data class OutboundDetourSettingsBean(var response: Response) {
-            data class Response(var type: String)
-        }
-    }
-
-    data class DnsBean(var servers: List<String>)
 
     data class RoutingBean(val strategy: String,
                            val settings: SettingsBean) {

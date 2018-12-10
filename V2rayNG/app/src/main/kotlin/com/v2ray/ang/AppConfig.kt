@@ -10,6 +10,7 @@ object AppConfig {
     const val PREF_CURR_CONFIG = "pref_v2ray_config"
     const val PREF_CURR_CONFIG_GUID = "pref_v2ray_config_guid"
     const val PREF_CURR_CONFIG_NAME = "pref_v2ray_config_name"
+    const val PREF_CURR_CONFIG_DOMAIN = "pref_v2ray_config_domain"
     const val VMESS_PROTOCOL: String = "vmess://"
     const val SS_PROTOCOL: String = "ss://"
     const val BROADCAST_ACTION_SERVICE = "com.v2ray.ang.action.service"
@@ -24,9 +25,9 @@ object AppConfig {
     const val PREF_V2RAY_ROUTING_AGENT = "pref_v2ray_routing_agent"
     const val PREF_V2RAY_ROUTING_DIRECT = "pref_v2ray_routing_direct"
     const val PREF_V2RAY_ROUTING_BLOCKED = "pref_v2ray_routing_blocked"
-    const val TAG_AGENT = "proxyout"
-    const val TAG_DIRECT = "directout"
-    const val TAG_BLOCKED = "blockout"
+    const val TAG_AGENT = "proxy"
+    const val TAG_DIRECT = "direct"
+    const val TAG_BLOCKED = "block"
 
     const val MSG_REGISTER_CLIENT = 1
     const val MSG_STATE_RUNNING = 11
@@ -38,7 +39,6 @@ object AppConfig {
     const val MSG_STATE_STOP = 4
     const val MSG_STATE_STOP_SUCCESS = 41
     const val MSG_STATE_RESTART = 5
-    const val MSG_STATE_RESTART_SOFT = 6
 
     object EConfigType {
         val Vmess = 1

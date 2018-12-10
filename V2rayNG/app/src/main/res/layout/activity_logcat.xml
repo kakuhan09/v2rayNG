@@ -6,6 +6,14 @@
     android:padding="10dp"
     tools:context=".ui.MainActivity">
 
+    <ProgressBar
+        android:id="@+id/pb_waiting"
+        style="@android:style/Widget.DeviceDefault.ProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
+
     <ScrollView
         android:id="@+id/sv_logcat"
         android:layout_width="match_parent"
@@ -26,3 +34,5 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </ScrollView>
 </RelativeLayout>
+
+

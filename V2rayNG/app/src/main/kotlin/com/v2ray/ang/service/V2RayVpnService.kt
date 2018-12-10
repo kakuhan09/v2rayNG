@@ -23,19 +23,18 @@ import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.MainActivity
 import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
-import com.v2ray.ang.util.AssetsUtil
 import com.v2ray.ang.util.MessageUtil
-import com.v2ray.ang.util.Utils
-import libv2ray.Libv2ray
-import libv2ray.V2RayCallbacks
-import libv2ray.V2RayVPNServiceSupportsSet
-import org.jetbrains.anko.sp
 import rx.Observable
 import rx.Subscription
-import java.io.FileDescriptor
 import java.io.FileInputStream
-import java.io.PrintWriter
+import java.io.FileOutputStream
 import java.lang.ref.SoftReference
+import tun2socks.PacketFlow
+import tun2socks.Tun2socks
+import java.net.InetAddress
+import java.nio.ByteBuffer
+import kotlin.concurrent.thread
+import tun2socks.VpnService as Tun2socksVpnService
 
 class V2RayVpnService : VpnService() {
     companion object {
@@ -53,26 +52,25 @@ class V2RayVpnService : VpnService() {
         }
     }
 
-    private val v2rayPoint = Libv2ray.newV2RayPoint()
-    private val v2rayCallback = V2RayCallback()
-    //    private var connectivitySubscription: Subscription? = null
-//    private var netWorkStateReceiver: NetWorkStateReceiver? = null
+    private val TAG = "V2RayVpnService:GoLog"
+    private lateinit var domainName: String
     private lateinit var configContent: String
-    private lateinit var mInterface: ParcelFileDescriptor
-    val fd: Int get() = mInterface.fd
-    private var currentTimeMillis: Long = 0
     private var mBuilder: NotificationCompat.Builder? = null
     private var mSubscription: Subscription? = null
     private var lastVpnBandwidth: VpnBandwidth? = null
     private var mNotificationManager: NotificationManager? = null
+    var isRunning = false
+
+    var proxyDomainIPMap: HashMap<String, String> = HashMap<String, String>()
+    var pfd: ParcelFileDescriptor? = null
+    var inputStream: FileInputStream? = null
+    var outputStream: FileOutputStream? = null
+    var buffer = ByteBuffer.allocate(1501)
 
     override fun onCreate() {
         super.onCreate()
-
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
-
-        v2rayPoint.packageName = packageName
     }
 
     override fun onRevoke() {
@@ -81,32 +79,60 @@ class V2RayVpnService : VpnService() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         cancelNotification()
     }
 
-    fun setup(parameters: String) {
-        // If the old interface has exactly the same parameters, use it!
-        // Configure a builder while parsing the parameters.
-        val builder = Builder()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand")
+        startV2ray()
+        return START_STICKY
+    }
 
-        parameters.split(" ")
-                .map { it.split(",") }
-                .forEach {
-                    when (it[0][0]) {
-                        'm' -> builder.setMtu(java.lang.Short.parseShort(it[1]).toInt())
-                        'a' -> builder.addAddress(it[1], Integer.parseInt(it[2]))
-                        'r' -> builder.addRoute(it[1], Integer.parseInt(it[2]))
-                        's' -> builder.addSearchDomain(it[1])
-                    }
-                }
+    private fun startV2ray() {
+        if (isRunning) {
+            Log.d(TAG, "isRunning")
+            return
+        }
+
+        Log.d(TAG, "check prepare")
+        val prepare = VpnService.prepare(this)
+        if (prepare != null) {
+            return
+        }
+
+        Log.d(TAG, "registerReceiver mMsgReceive")
+        try {
+            registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_SERVICE))
+        } catch (e: Exception) {
+        }
+
+        domainName = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, "")
+        configContent = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG, "")
+        Log.d(TAG, domainName)
+
+        try {
+            val addr = InetAddress.getByName(domainName)
+            val ip = addr.getHostAddress()
+            if (domainName != ip) {
+                proxyDomainIPMap.put(domainName, ip)
+                Log.d(TAG, ip)
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, e.message)
+            return
+        }
+        Log.d(TAG, "get InetAddress ok")
+
+        val builder = Builder()
+        builder.setSession("vv")
+                .setMtu(1500)
+                .addAddress("10.233.233.233", 30)
+                .addDnsServer("223.5.5.5")
+                .addSearchDomain("local")
+                .addRoute("0.0.0.0", 0)
+//        builder.setBlocking(true)
 
         builder.setSession(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
-
-        val dnsServers = Utils.getRemoteDnsServers(defaultDPreference)
-        for (dns in dnsServers) {
-            builder.addDnsServer(dns)
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
                 defaultDPreference.getPrefBoolean(SettingsActivity.PREF_PER_APP_PROXY, false)) {
@@ -119,22 +145,44 @@ class V2RayVpnService : VpnService() {
                     else
                         builder.addAllowedApplication(it)
                 } catch (e: PackageManager.NameNotFoundException) {
-                    //Logger.d(e)
+                    Log.d(TAG, e.message)
                 }
             }
         }
 
-        // Close the old interface since the parameters have been changed.
-        try {
-            mInterface.close()
-        } catch (ignored: Exception) {
+        pfd = builder.establish()
+        Log.d(TAG, "pfd:" + pfd.toString())
+
+        inputStream = FileInputStream(pfd?.fileDescriptor)
+        outputStream = FileOutputStream(pfd?.fileDescriptor)
+
+        val flow = Flow(outputStream)
+        val service = Service(this)
+
+        val files = filesDir.list()
+        if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
+            Log.d(TAG, "not contains geo files")
+            val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
+            val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
+            fos.write(geoipBytes)
+            fos.close()
+
+            val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
+            val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
+            fos2.write(geositeBytes)
+            fos2.close()
         }
+        val serverDomains = proxyDomainIPMap.keys.joinToString(separator = ",")
+        val serverIPs = proxyDomainIPMap.values.joinToString(separator = ",")
 
-        // Create a new interface using the builder and save the parameters.
-        mInterface = builder.establish()
-        //Logger.d("VPNService", "New interface: " + parameters)
-        //Logger.d(Libv2ray.checkVersionX())
+        Log.d(TAG, "start Tun2socks")
+        //tun2socks.Tun2socks.startV2Ray(flow, service, configContent.toByteArray(), filesDir.absolutePath)
+        Tun2socks.startV2Ray(flow, service, configContent.toByteArray(), filesDir.absolutePath, serverDomains, serverIPs)
+        Log.d(TAG, "success Tun2socks")
+        isRunning = true
 
+        MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_SUCCESS, "")
+        showNotification()
 
         if (defaultDPreference.getPrefBoolean(SettingsActivity.PREF_SPEED_ENABLED, false)) {
             mSubscription = Observable.interval(3, java.util.concurrent.TimeUnit.SECONDS)
@@ -148,93 +196,31 @@ class V2RayVpnService : VpnService() {
                         }
                     }
         }
-    }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        restartV2Ray()
-
-        return START_STICKY
-        //return super.onStartCommand(intent, flags, startId)
-    }
-
-    private fun vpnCheckIsReady() {
-        val prepare = VpnService.prepare(this)
-
-        if (prepare != null) {
-            return
-        }
-
-        v2rayPoint.vpnSupportReady()
-        if (v2rayPoint.isRunning) {
-            MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_SUCCESS, "")
-            showNotification()
-        } else {
-            MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_FAILURE, "")
-            cancelNotification()
+        thread(start = true) {
+            Log.d(TAG, "handlePackets")
+            handlePackets()
+            Log.d(TAG, "end handlePackets")
         }
     }
 
-    private fun startV2ray(isForced: Boolean = false) {
-        if (!v2rayPoint.isRunning || isForced) {
-
-            try {
-                registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_SERVICE))
-            } catch (e: Exception) {
-            }
-
-            configContent = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG, "")
-
-//            connectivitySubscription = ReactiveNetwork.observeNetworkConnectivity(this.applicationContext)
-//                    .subscribeOn(Schedulers.io())
-//                    //.filter(Connectivity.hasState(NetworkInfo.State.CONNECTED))
-//                    //.throttleWithTimeout(3, TimeUnit.SECONDS)
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe { connectivity ->
-//                        val state = connectivity.state
-//                        Logger.e(state.toString())
-//                        //if (state == NetworkInfo.State.CONNECTED) {
-//                        if (v2rayPoint.isRunning) {
-//                            v2rayPoint.networkInterrupted()
-//                        }
-//                        //}
-//
-            v2rayPoint.callbacks = v2rayCallback
-//            v2rayPoint.vpnSupportSet = v2rayCallback
-            v2rayPoint.setVpnSupportSet(v2rayCallback)
-
-            v2rayPoint.configureFile = "V2Ray_internal/ConfigureFileContent"
-            v2rayPoint.configureFileContent = configContent
-
-            //next gen tun2ray
-//            v2rayPoint.upgradeToContext()
-//            v2rayPoint.optinNextGenerationTunInterface()
-
-            v2rayPoint.runLoop()
-        }
-
-//        showNotification()
-    }
-
-    private fun stopV2Ray(isForced: Boolean = true) {
+    private fun stopV2Ray() {
 //        val configName = defaultDPreference.getPrefString(PREF_CURR_CONFIG_GUID, "")
 //        val emptyInfo = VpnNetworkInfo()
 //        val info = loadVpnNetworkInfo(configName, emptyInfo)!! + (lastNetworkInfo ?: emptyInfo)
 //        saveVpnNetworkInfo(configName, info)
 
-        if (v2rayPoint.isRunning) {
-            v2rayPoint.stopLoop()
-        }
+        if (isRunning) {
+            isRunning = false
+            Tun2socks.stopV2Ray()
+            pfd?.close()
+            pfd = null
+            inputStream = null
+            outputStream = null
 
-//        unregisterReceiver(netWorkStateReceiver)
+            MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_STOP_SUCCESS, "")
+            cancelNotification()
 
-//        connectivitySubscription?.let {
-//            it.unsubscribe()
-//            connectivitySubscription = null
-//        }
-        MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_STOP_SUCCESS, "")
-        cancelNotification()
-
-        if (isForced) {
             try {
                 unregisterReceiver(mMsgReceive)
             } catch (e: Exception) {
@@ -243,28 +229,17 @@ class V2RayVpnService : VpnService() {
         }
     }
 
-    private fun restartV2Ray() {
-        try {
-            //use custom geo dat
-//            val path = AssetsUtil.getAssetPath(this, "geoip.dat")
-//            Libv2ray.setAssetsOverride("geoip.dat", path)
-//
-//            val path2 = AssetsUtil.getAssetPath(this, "geosite.dat")
-//            Libv2ray.setAssetsOverride("geosite.dat", path2)
-            Log.d("restartV2Ray", "restartV2Ray")
-
-            //stopV2Ray(false)
-            startV2ray(true)
-        } catch (e: Exception) {
+    class Flow(stream: FileOutputStream?) : PacketFlow {
+        val flowOutputStream = stream
+        override fun writePacket(pkt: ByteArray?) {
+            flowOutputStream?.write(pkt)
         }
     }
 
-    private fun restartV2RaySoft() {
-        if (System.currentTimeMillis() > currentTimeMillis + 2000) {
-            if (v2rayPoint.isRunning) {
-                v2rayPoint.networkInterrupted()
-            }
-            currentTimeMillis = System.currentTimeMillis()
+    class Service(service: VpnService) : tun2socks.VpnService {
+        val vpnService = service
+        override fun protect(fd: Long) {
+            vpnService.protect(fd.toInt())
         }
     }
 
@@ -308,11 +283,6 @@ class V2RayVpnService : VpnService() {
         //mBuilder?.setDefaults(NotificationCompat.FLAG_ONLY_ALERT_ONCE)  //取消震动,铃声其他都不好使
 
         startForeground(NOTIFICATION_ID, mBuilder?.build())
-
-//        if (netWorkStateReceiver == null) {
-//            netWorkStateReceiver = NetWorkStateReceiver()
-//        }
-//        registerReceiver(netWorkStateReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -349,23 +319,6 @@ class V2RayVpnService : VpnService() {
         return mNotificationManager!!
     }
 
-//    private val vpnBandwidth: VpnBandwidth?
-//        get() = FileInputStream("/proc/net/dev").bufferedReader().use {
-//            val prefix = "tun0:"
-//            while (true) {
-//                val line = it.readLine().trim()
-//                if (line.startsWith(prefix)) {
-//                    val numbers = line.substring(prefix.length).split(' ')
-//                            .filter(String::isNotEmpty)
-//                            .map(String::toLong)
-//                    if (numbers.size > 10)
-//                        return VpnBandwidth(numbers[0], numbers[8])
-//                    break
-//                }
-//            }
-//            return null
-//        }
-
     private val vpnBandwidth: VpnBandwidth?
         get() {
             try {
@@ -391,36 +344,6 @@ class V2RayVpnService : VpnService() {
             }
         }
 
-
-    private inner class V2RayCallback : V2RayCallbacks, V2RayVPNServiceSupportsSet {
-        override fun shutdown() = 0L
-
-        override fun getVPNFd() = this@V2RayVpnService.fd.toLong()
-
-        override fun prepare(): Long {
-            vpnCheckIsReady()
-            return 1
-        }
-
-        override fun protect(l: Long) = (if (this@V2RayVpnService.protect(l.toInt())) 0 else 1).toLong()
-
-        override fun onEmitStatus(l: Long, s: String?): Long {
-            //Logger.d(s)
-            return 0
-        }
-
-        override fun setup(s: String): Long {
-            //Logger.d(s)
-            try {
-                this@V2RayVpnService.setup(s)
-                return 0
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return -1
-            }
-        }
-    }
-
     private var mMsgReceive = ReceiveMessageHandler(this@V2RayVpnService)
 
     private class ReceiveMessageHandler(vpnService: V2RayVpnService) : BroadcastReceiver() {
@@ -431,13 +354,12 @@ class V2RayVpnService : VpnService() {
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_REGISTER_CLIENT -> {
                     //Logger.e("ReceiveMessageHandler", intent?.getIntExtra("key", 0).toString())
-
-                    val isRunning = vpnService?.v2rayPoint!!.isRunning
+                    val isRunning = vpnService?.isRunning!!
                             && VpnService.prepare(vpnService) == null
                     if (isRunning) {
-                        MessageUtil.sendMsg2UI(vpnService, AppConfig.MSG_STATE_RUNNING, "")
+                        MessageUtil.sendMsg2UI(vpnService!!, AppConfig.MSG_STATE_RUNNING, "")
                     } else {
-                        MessageUtil.sendMsg2UI(vpnService, AppConfig.MSG_STATE_NOT_RUNNING, "")
+                        MessageUtil.sendMsg2UI(vpnService!!, AppConfig.MSG_STATE_NOT_RUNNING, "")
                     }
                 }
                 AppConfig.MSG_UNREGISTER_CLIENT -> {
@@ -450,12 +372,26 @@ class V2RayVpnService : VpnService() {
                     vpnService?.stopV2Ray()
                 }
                 AppConfig.MSG_STATE_RESTART -> {
-                    vpnService?.restartV2Ray()
-                }
-                AppConfig.MSG_STATE_RESTART_SOFT -> {
-                    vpnService?.restartV2RaySoft()
+                    vpnService?.startV2ray()
                 }
             }
+        }
+    }
+
+    fun handlePackets() {
+        while (isRunning) {
+            val n = inputStream?.read(buffer.array())
+            n?.let { it } ?: return
+            if (n > 0) {
+                //Log.d(TAG, "handlePackets n:" + n.toString())
+                buffer.limit(n)
+                tun2socks.Tun2socks.inputPacket(buffer.array())
+                buffer.clear()
+            }
+//            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+//                // In non-blocking mode
+//                Thread.sleep(50)
+//            }
         }
     }
 }

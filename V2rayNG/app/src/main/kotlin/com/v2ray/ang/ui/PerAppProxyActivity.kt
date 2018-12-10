@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -23,6 +24,12 @@ import java.util.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import com.v2ray.ang.dto.AppInfo
+import com.v2ray.ang.extension.v2RayApplication
+import com.v2ray.ang.util.Utils
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
+import java.net.URL
 
 class PerAppProxyActivity : BaseActivity() {
     companion object {
@@ -48,8 +55,7 @@ class PerAppProxyActivity : BaseActivity() {
                 .map {
                     val comparator = object : Comparator<AppInfo> {
                         val collator = Collator.getInstance()
-                        override fun compare(o1: AppInfo, o2: AppInfo)
-                                = collator.compare(o1.appName, o2.appName)
+                        override fun compare(o1: AppInfo, o2: AppInfo) = collator.compare(o1.appName, o2.appName)
                     }
                     it.sortedWith(comparator)
                 }
@@ -176,8 +182,72 @@ class PerAppProxyActivity : BaseActivity() {
             it.notifyDataSetChanged()
             true
         } ?: false
+        R.id.select_proxy_app -> {
+            selectProxyApp()
 
+            true
+        }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun selectProxyApp() {
+        toast(R.string.msg_downloading_content)
+        val url = "https://raw.githubusercontent.com/2dust/androidpackagenamelist/master/proxy.txt"
+        doAsync {
+            val content = URL(url).readText()
+            uiThread {
+                Log.d("selectProxyApp", content)
+                selectProxyApp(content)
+                toast(R.string.toast_success)
+            }
+        }
+    }
+
+    private fun selectProxyApp(content: String): Boolean {
+        try {
+            var proxyApps = content
+            if (TextUtils.isEmpty(content)) {
+                val assets = Utils.readTextFromAssets(v2RayApplication, "proxy_packagename.txt")
+                proxyApps = assets.lines().toString()
+            }
+            if (TextUtils.isEmpty(proxyApps)) {
+                return false
+            }
+
+            adapter?.blacklist!!.clear()
+
+            if (switch_bypass_apps.isChecked) {
+                adapter?.let {
+                    it.apps.forEach block@{
+                        val packageName = it.packageName
+                        Log.d("selectProxyApp2", packageName)
+                        if (proxyApps.indexOf(packageName) < 0) {
+                            adapter?.blacklist!!.add(packageName)
+                            println(packageName)
+                            return@block
+                        }
+                    }
+                    it.notifyDataSetChanged()
+                }
+            } else {
+                adapter?.let {
+                    it.apps.forEach block@{
+                        val packageName = it.packageName
+                        Log.d("selectProxyApp3", packageName)
+                        if (proxyApps.indexOf(packageName) >= 0) {
+                            adapter?.blacklist!!.add(packageName)
+                            println(packageName)
+                            return@block
+                        }
+                    }
+                    it.notifyDataSetChanged()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
     }
 
 }

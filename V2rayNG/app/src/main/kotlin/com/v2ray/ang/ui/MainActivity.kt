@@ -22,15 +22,19 @@ import org.jetbrains.anko.*
 import java.lang.ref.SoftReference
 import java.net.URL
 import android.content.IntentFilter
+import android.support.design.widget.NavigationView
+import android.support.v4.view.GravityCompat
+import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
+import com.v2ray.ang.InappBuyActivity
+import com.v2ray.ang.extension.defaultDPreference
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import com.v2ray.ang.helper.SimpleItemTouchHelperCallback
-import kotlinx.android.synthetic.main.activity_server3.*
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     companion object {
         private const val REQUEST_CODE_VPN_PREPARE = 0
         private const val REQUEST_SCAN = 1
@@ -58,6 +62,8 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        title = getString(R.string.title_server)
+        setSupportActionBar(toolbar)
 
         fab.setOnClickListener {
             if (isRunning) {
@@ -72,17 +78,19 @@ class MainActivity : BaseActivity() {
             }
         }
         layout_test.setOnClickListener {
-            if (isRunning) {
-                tv_test_state.text = getString(R.string.connection_test_testing)
-                doAsync {
-                    val result = Utils.testConnection(this@MainActivity)
-                    uiThread {
-                        tv_test_state.text = Utils.getEditable(result)
-                    }
-                }
-            } else {
-//                tv_test_state.text = getString(R.string.connection_test_fail)
-            }
+//                        if (isRunning) {
+//                            val socksPort = 0//Utils.parseInt(defaultDPreference.getPrefString(SettingsActivity.PREF_SOCKS_PORT, "10808"))
+//
+//                            tv_test_state.text = getString(R.string.connection_test_testing)
+//                            doAsync {
+//                                val result = Utils.testConnection(this@MainActivity, socksPort)
+//                                uiThread {
+//                                    tv_test_state.text = Utils.getEditable(result)
+//                                }
+//                            }
+//                        } else {
+////                tv_test_state.text = getString(R.string.connection_test_fail)
+//                        }
         }
 
         recycler_view.setHasFixedSize(true)
@@ -92,9 +100,19 @@ class MainActivity : BaseActivity() {
         val callback = SimpleItemTouchHelperCallback(adapter)
         mItemTouchHelper = ItemTouchHelper(callback)
         mItemTouchHelper?.attachToRecyclerView(recycler_view)
+
+
+        val toggle = ActionBarDrawerToggle(
+                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
+        nav_view.setNavigationItemSelectedListener(this)
     }
 
     fun startV2Ray() {
+        if (AngConfigManager.configs.index < 0) {
+            return
+        }
         showCircle()
 //        toast(R.string.toast_services_start)
         Utils.startVService(this)
@@ -178,6 +196,10 @@ class MainActivity : BaseActivity() {
             adapter.updateConfigList()
             true
         }
+        R.id.import_config_custom_clipboard -> {
+            importConfigCustomClipboard()
+            true
+        }
         R.id.import_config_custom_local -> {
             importConfigCustomLocal()
             true
@@ -191,10 +213,10 @@ class MainActivity : BaseActivity() {
             true
         }
 
-        R.id.sub_setting -> {
-            startActivity<SubSettingActivity>()
-            true
-        }
+//        R.id.sub_setting -> {
+//            startActivity<SubSettingActivity>()
+//            true
+//        }
 
         R.id.sub_update -> {
             importConfigViaSub()
@@ -209,14 +231,14 @@ class MainActivity : BaseActivity() {
             }
             true
         }
-        R.id.settings -> {
-            startActivity<SettingsActivity>("isRunning" to isRunning)
-            true
-        }
-        R.id.logcat -> {
-            startActivity<LogcatActivity>()
-            true
-        }
+//        R.id.settings -> {
+//            startActivity<SettingsActivity>("isRunning" to isRunning)
+//            true
+//        }
+//        R.id.logcat -> {
+//            startActivity<LogcatActivity>()
+//            true
+//        }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -230,14 +252,14 @@ class MainActivity : BaseActivity() {
 //                    .addCategory(Intent.CATEGORY_DEFAULT)
 //                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
 //        } catch (e: Exception) {
-            RxPermissions(this)
-                    .request(Manifest.permission.CAMERA)
-                    .subscribe {
-                        if (it)
-                            startActivityForResult<ScannerActivity>(requestCode)
-                        else
-                            toast(R.string.toast_permission_denied)
-                    }
+        RxPermissions(this)
+                .request(Manifest.permission.CAMERA)
+                .subscribe {
+                    if (it)
+                        startActivityForResult<ScannerActivity>(requestCode)
+                    else
+                        toast(R.string.toast_permission_denied)
+                }
 //        }
         return true
     }
@@ -263,6 +285,21 @@ class MainActivity : BaseActivity() {
             adapter.updateConfigList()
         } else {
             toast(R.string.toast_failure)
+        }
+    }
+
+    fun importConfigCustomClipboard(): Boolean {
+        try {
+            val configText = Utils.getClipboard(this)
+            if (TextUtils.isEmpty(configText)) {
+                toast(R.string.toast_none_data_clipboard)
+                return false
+            }
+            importCustomizeConfig(configText)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 
@@ -466,5 +503,37 @@ class MainActivity : BaseActivity() {
                     }
         } catch (e: Exception) {
         }
+    }
+
+    override fun onBackPressed() {
+        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
+            drawer_layout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Handle navigation view item clicks here.
+        when (item.itemId) {
+            //R.id.server_profile -> activityClass = MainActivity::class.java
+            R.id.sub_setting -> {
+                startActivity<SubSettingActivity>()
+            }
+            R.id.settings -> {
+                startActivity<SettingsActivity>("isRunning" to isRunning)
+            }
+            R.id.feedback -> {
+                Utils.openUri(this, "https://github.com/2dust/v2rayNG/issues")
+            }
+            R.id.donate -> {
+                startActivity<InappBuyActivity>()
+            }
+            R.id.logcat -> {
+                startActivity<LogcatActivity>()
+            }
+        }
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return true
     }
 }

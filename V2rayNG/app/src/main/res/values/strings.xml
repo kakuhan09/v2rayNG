@@ -4,6 +4,8 @@
     <string name="app_widget_name">Switch</string>
     <string name="app_tile_name">Switch</string>
     <string name="app_tile_first_use">First use of this feature, please use the app to activate VPN</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <!-- Notifications -->
     <string name="notification_action_stop_v2ray">Stop</string>
@@ -15,7 +17,7 @@
     <string name="toast_services_failure">Start Services Failure</string>
 
     <!--ServerActivity-->
-    <string name="title_server">Server</string>
+    <string name="title_server">Configuration file</string>
     <string name="menu_item_add_config">Add config</string>
     <string name="menu_item_save_config">Save config</string>
     <string name="menu_item_del_config">Delete config</string>
@@ -23,7 +25,9 @@
     <string name="menu_item_import_config_clipboard">Import config from Clipboard</string>
     <string name="menu_item_import_config_manually_vmess">Type manually[Vmess]</string>
     <string name="menu_item_import_config_manually_ss">Type manually[Shadowsocks]</string>
-    <string name="menu_item_import_config_custom_local">Import custom config from locally</string>
+    <string name="menu_item_import_config_custom">custom config</string>
+    <string name="menu_item_import_config_custom_clipboard">Import custom config from Clipboard</string>
+    <string name="menu_item_import_config_custom_local">Import custom c from locally</string>
     <string name="menu_item_import_config_custom_url">Import custom config from URL</string>
     <string name="menu_item_import_config_custom_url_scan">Import custom config scan URL</string>
     <string name="del_config_comfirm">Confirm delete？</string>
@@ -56,12 +60,15 @@
     <string name="server_lab_content">Content</string>
     <string name="toast_none_data_clipboard">There is no data in the clipboard</string>
     <string name="toast_invalid_url">Invalid URL</string>
+    <string name="server_lab_need_inbound">Ensure inbound has socks proxy port 10808</string>
 
     <!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">Loading</string>
     <string name="menu_item_select_all">Select all</string>
     <string name="msg_enter_keywords">Enter keywords</string>
     <string name="switch_bypass_apps_mode">Bypass Mode</string>
+    <string name="menu_item_select_proxy_app">Auto select proxy app</string>
+    <string name="msg_downloading_content">Downloading content</string>
 
 
     <!-- Preferences -->
@@ -85,11 +92,14 @@
     <string name="summary_pref_donate">Donate developer</string>
     <string name="donate_detail">Add some experimental advanced features</string>
 
-    <string name="title_pref_remote_dns">Remote DNS</string>
+    <string name="title_pref_remote_dns">Remote DNS(Can not fill)</string>
     <string name="summary_pref_remote_dns">Remote DNS</string>
 
-    <string name="title_pref_lanconn_port">LAN connection port(0=not allowed)</string>
-    <string name="summary_pref_lanconn_port">LAN connection port</string>
+    <string name="title_pref_socks_port">SOCKS5 proxy port</string>
+    <string name="summary_pref_socks_port">SOCKS5 proxy port</string>
+
+    <string name="title_pref_lanconn_port">HTTP proxy port(0=not allowed)</string>
+    <string name="summary_pref_lanconn_port">HTTP proxy port</string>
 
     <string name="title_pref_speedup_domain">Speedup domain name resolution</string>
     <string name="summary_pref_speedup_domain">Valid only for http/tls</string>
@@ -139,6 +149,7 @@
     <string-array name="share_method">
         <item>QRcode</item>
         <item>Export to clipboard</item>
+        <item>Export full configuration to clipboard</item>
     </string-array>
 
     <string-array name="routing_tag">
@@ -149,8 +160,9 @@
 
     <string-array name="routing_mode">
         <item>Global</item>
-        <item>Bypass mainland</item>
-        <!--<item>Geo Family</item>-->
+        <item>Bypassing the LAN address</item>
+        <item>Bypass mainland address</item>
+        <item>Bypassing LAN and mainland address</item>
     </string-array>
 
 </resources>

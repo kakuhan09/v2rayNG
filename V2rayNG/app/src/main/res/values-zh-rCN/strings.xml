@@ -4,10 +4,12 @@
     <string name="app_widget_name">开关</string>
     <string name="app_tile_name">开关</string>
     <string name="app_tile_first_use">初次使用此功能请先用APP激活VPN</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <!-- Notifications -->
     <string name="notification_action_stop_v2ray">停止</string>
-    <string name="toast_permission_denied">无法取得权限</string>
+    <string name="toast_permission_denied">无法取得权D:\vssHotel\SourceCode\Hotel.root\Hotel\Clubank.Hotel\FrontCounter\CheckoutListForm.cs限</string>
     <string name="notification_action_more">点击了解更多</string>
     <string name="toast_services_start">启动服务中</string>
     <string name="toast_services_stop">关闭中</string>
@@ -15,7 +17,7 @@
     <string name="toast_services_failure">启动服务失败</string>
 
     <!--ServerActivity-->
-    <string name="title_server">服务器</string>
+    <string name="title_server">配置文件</string>
     <string name="menu_item_add_config">添加配置</string>
     <string name="menu_item_save_config">保存配置</string>
     <string name="menu_item_del_config">删除配置</string>
@@ -23,8 +25,10 @@
     <string name="menu_item_import_config_clipboard">从剪贴板导入</string>
     <string name="menu_item_import_config_manually_vmess">手动输入[Vmess]</string>
     <string name="menu_item_import_config_manually_ss">手动输入[Shadowsocks]</string>
+    <string name="menu_item_import_config_custom">自定义配置</string>
+    <string name="menu_item_import_config_custom_clipboard">从剪贴板导入自定义配置</string>
     <string name="menu_item_import_config_custom_local">从本地导入自定义配置</string>
-    <string name="menu_item_import_config_custom_url">从URL导入自定义配置</string>
+    <string name="menu_item_import_config_custom_url">剪贴板URL导入自定义配置</string>
     <string name="menu_item_import_config_custom_url_scan">扫描URL导入自定义配置</string>
     <string name="del_config_comfirm">确认删除？</string>
     <string name="server_lab_remarks">别名(remarks)</string>
@@ -56,12 +60,15 @@
     <string name="server_lab_content">内容</string>
     <string name="toast_none_data_clipboard">剪贴板中没有数据</string>
     <string name="toast_invalid_url">无效的网址</string>
+    <string name="server_lab_need_inbound">确保inbound有socks代理端口10808</string>
 
     <!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">正在加载</string>
     <string name="menu_item_select_all">全选</string>
     <string name="msg_enter_keywords">输入关键字</string>
     <string name="switch_bypass_apps_mode">绕行模式</string>
+    <string name="menu_item_select_proxy_app">自动选中需代理应用</string>
+    <string name="msg_downloading_content">正在下载内容</string>
 
     <!-- Preferences -->
     <string name="title_settings">设置</string>
@@ -84,11 +91,14 @@
     <string name="summary_pref_donate">支持开发者</string>
     <string name="donate_detail">陆续增加一些试验性的进阶功能</string>
 
-    <string name="title_pref_remote_dns">远程DNS</string>
+    <string name="title_pref_remote_dns">远程DNS(可以不填)</string>
     <string name="summary_pref_remote_dns">远程DNS</string>
 
-    <string name="title_pref_lanconn_port">局域网的连接端口(0=不允许)</string>
-    <string name="summary_pref_lanconn_port">局域网的连接端口</string>
+    <string name="title_pref_socks_port">SOCKS5代理端口</string>
+    <string name="summary_pref_socks_port">SOCKS5代理端口</string>
+
+    <string name="title_pref_lanconn_port">HTTP代理端口(0=不允许)</string>
+    <string name="summary_pref_lanconn_port">HTTP代理端口</string>
 
     <string name="title_pref_speedup_domain">加速域名解析</string>
     <string name="summary_pref_speedup_domain">直连解析,可能存在问题,http/tls有效</string>
@@ -138,8 +148,9 @@
     <string-array name="share_method">
         <item>二维码</item>
         <item>导出至剪贴板</item>
+        <item>导出完整配置至剪贴板</item>
     </string-array>
-
+    share_method
     <string-array name="routing_tag">
         <item>代理的网址或IP</item>
         <item>直连的网址或IP</item>
@@ -148,8 +159,9 @@
 
     <string-array name="routing_mode">
         <item>全局</item>
+        <item>绕过局域网地址</item>
         <item>绕过大陆地址</item>
-        <!--<item>Geo全家桶</item>-->
+        <item>绕过局域网及大陆地址</item>
     </string-array>
 
 </resources>

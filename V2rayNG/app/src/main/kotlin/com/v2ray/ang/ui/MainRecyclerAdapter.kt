@@ -9,8 +9,10 @@ import android.view.ViewGroup
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.AngConfig
+import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.helper.ItemTouchHelperAdapter
 import com.v2ray.ang.helper.ItemTouchHelperViewHolder
+import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.activity_main.*
@@ -78,7 +80,7 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
                 holder.statistics.text = ""//mActivity.getString(R.string.server_customize_config)
                 holder.layout_share.visibility = View.INVISIBLE
             } else if (configType == AppConfig.EConfigType.Shadowsocks) {
-                holder.type.text = "ss"
+                holder.type.text = "shadowsocks"
                 holder.statistics.text = "$address : $port"
                 holder.layout_share.visibility = View.VISIBLE
             }
@@ -101,6 +103,13 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
                             }
                             1 -> {
                                 if (AngConfigManager.share2Clipboard(position) == 0) {
+                                    mActivity.toast(R.string.toast_success)
+                                } else {
+                                    mActivity.toast(R.string.toast_failure)
+                                }
+                            }
+                            2 -> {
+                                if (AngConfigManager.shareFullContent2Clipboard(position) == 0) {
                                     mActivity.toast(R.string.toast_success)
                                 } else {
                                     mActivity.toast(R.string.toast_failure)
@@ -200,9 +209,9 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
         if (configs.index != position) {
 //            mActivity.alert(R.string.del_config_comfirm) {
 //                positiveButton(android.R.string.ok) {
-                    if (AngConfigManager.removeServer(position) == 0) {
-                        notifyItemRemoved(position)
-                    }
+            if (AngConfigManager.removeServer(position) == 0) {
+                notifyItemRemoved(position)
+            }
 //                }
 //                show()
 //            }

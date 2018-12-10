@@ -16,15 +16,16 @@ class SubSettingActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sub_setting)
 
+        title = getString(R.string.title_sub_setting)
+
         recycler_view.setHasFixedSize(true)
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.adapter = adapter
 
-        title = getString(R.string.title_sub_setting)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
         adapter.updateConfigList()
     }

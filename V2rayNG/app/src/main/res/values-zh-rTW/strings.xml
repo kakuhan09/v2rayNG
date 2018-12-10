@@ -4,6 +4,8 @@
     <string name="app_widget_name">切換</string>
     <string name="app_tile_name">切換</string>
     <string name="app_tile_first_use">首次使用此功能，請使用此應用程式來啟用 VPN</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <!-- Notifications -->
     <string name="notification_action_stop_v2ray">停止</string>
@@ -15,7 +17,7 @@
     <string name="toast_services_failure">啟動服務失敗</string>
 
     <!--ServerActivity-->
-    <string name="title_server">伺服器</string>
+    <string name="title_server">組態</string>
     <string name="menu_item_add_config">新增組態</string>
     <string name="menu_item_save_config">儲存組態</string>
     <string name="menu_item_del_config">刪除組態</string>
@@ -23,6 +25,8 @@
     <string name="menu_item_import_config_clipboard">自剪貼簿匯入組態</string>
     <string name="menu_item_import_config_manually_vmess">手動鍵入[Vmess]</string>
     <string name="menu_item_import_config_manually_ss">手動鍵入[Shadowsocks]</string>
+    <string name="menu_item_import_config_custom">自訂組態</string>
+    <string name="menu_item_import_config_custom_clipboard">自剪貼簿匯入自訂組態</string>
     <string name="menu_item_import_config_custom_local">自本機匯入自訂組態</string>
     <string name="menu_item_import_config_custom_url">自網址匯入自訂組態</string>
     <string name="menu_item_import_config_custom_url_scan">掃描網址匯入自訂組態</string>
@@ -56,12 +60,15 @@
     <string name="server_lab_content">內容</string>
     <string name="toast_none_data_clipboard">剪貼簿內無資料</string>
     <string name="toast_invalid_url">網址無效</string>
+    <string name="server_lab_need_inbound">​​確保inbound有socks代理端口10808</string>
 
     <!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">載入</string>
     <string name="menu_item_select_all">全選</string>
     <string name="msg_enter_keywords">輸入關鍵字</string>
     <string name="switch_bypass_apps_mode">略過模式</string>
+    <string name="menu_item_select_proxy_app">自動選中需代理應用</string>
+    <string name="msg_downloading_content">正在下載內容</string>
 
 
     <!-- Preferences -->
@@ -85,11 +92,14 @@
     <string name="summary_pref_donate">向開發人員捐款</string>
     <string name="donate_detail">新增一些實驗性進階功能</string>
 
-    <string name="title_pref_remote_dns">遠端 DNS</string>
+    <string name="title_pref_remote_dns">遠端 DNS(可以不填)</string>
     <string name="summary_pref_remote_dns">遠端 DNS</string>
 
-    <string name="title_pref_lanconn_port">局域網的連接端口(0=不允許)</string>
-    <string name="summary_pref_lanconn_port">局域網的連接端口</string>
+    <string name="title_pref_socks_port">SOCKS5代理端口</string>
+    <string name="summary_pref_socks_port">SOCKS5代理端口</string>
+
+    <string name="title_pref_lanconn_port">HTTP代理端口(0=不允許)</string>
+    <string name="summary_pref_lanconn_port">HTTP代理端口</string>
 
     <string name="title_pref_speedup_domain">加快網域名稱解析速度</string>
     <string name="summary_pref_speedup_domain">只對 HTTP/TLS 有效</string>
@@ -139,6 +149,7 @@
     <string-array name="share_method">
         <item>QR 碼</item>
         <item>匯出至剪貼簿</item>
+        <item>匯出完整配置至剪貼簿</item>
     </string-array>
 
     <string-array name="routing_tag">
@@ -149,8 +160,8 @@
 
     <string-array name="routing_mode">
         <item>全球</item>
+        <item>略過局域網</item>
         <item>略過中國大陸</item>
-        <!--<item>Geo 家族</item>-->
+        <item>略過局域網及中國大陸</item>
     </string-array>
-
 </resources>

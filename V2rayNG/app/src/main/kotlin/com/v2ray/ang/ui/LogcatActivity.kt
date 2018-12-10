@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import com.v2ray.ang.R
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.activity_logcat.*
@@ -21,12 +22,16 @@ class LogcatActivity : BaseActivity() {
         setContentView(R.layout.activity_logcat)
 
         title = getString(R.string.title_logcat)
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        logcat()
     }
 
-    override fun onPostResume() {
-        super.onPostResume()
+    private fun logcat() {
+
         try {
+            pb_waiting.visibility = View.VISIBLE
+
             doAsync {
                 val lst = LinkedHashSet<String>()
                 lst.add("logcat")
@@ -43,6 +48,7 @@ class LogcatActivity : BaseActivity() {
                 uiThread {
                     tv_logcat.text = allText
                     tv_logcat.movementMethod = ScrollingMovementMethod()
+                    pb_waiting.visibility = View.GONE
                 }
             }
         } catch (e: IOException) {

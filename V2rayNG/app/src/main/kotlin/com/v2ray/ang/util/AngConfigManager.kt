@@ -15,6 +15,8 @@ import com.v2ray.ang.AppConfig.VMESS_PROTOCOL
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.dto.VmessQRCode
+import com.v2ray.ang.extension.defaultDPreference
+import org.jetbrains.anko.toast
 import java.net.URLDecoder
 import java.util.*
 
@@ -41,6 +43,9 @@ object AngConfigManager {
                 angConfig = Gson().fromJson(context, AngConfig::class.java)
             } else {
                 angConfig = AngConfig(0, vmess = arrayListOf(AngConfig.VmessBean()), subItem = arrayListOf(AngConfig.SubItemBean()))
+                angConfig.index = -1
+                angConfig.vmess.clear()
+                angConfig.subItem.clear()
             }
 
             for (i in angConfig.vmess.indices) {
@@ -167,9 +172,20 @@ object AngConfigManager {
     /**
      * gen and store v2ray config file
      */
-    fun genStoreV2rayConfig(): Boolean {
+    fun genStoreV2rayConfig(index: Int): Boolean {
         try {
-            val result = V2rayConfigUtil.getV2rayConfig(app, angConfig)
+            if (angConfig.index < 0
+                    || angConfig.vmess.count() <= 0
+                    || angConfig.index > angConfig.vmess.count() - 1
+            ) {
+                return false
+            }
+            var index2 = angConfig.index
+            if (index >= 0) {
+                index2 = index
+            }
+
+            val result = V2rayConfigUtil.getV2rayConfig(app, angConfig.vmess[index2])
             if (result.status) {
                 app.defaultDPreference.setPrefString(PREF_CURR_CONFIG, result.content)
                 app.defaultDPreference.setPrefString(PREF_CURR_CONFIG_GUID, currConfigGuid())
@@ -445,6 +461,24 @@ object AngConfigManager {
             e.printStackTrace()
             return null
         }
+    }
+
+    /**
+     * shareFullContent2Clipboard
+     */
+    fun shareFullContent2Clipboard(index: Int): Int {
+        try {
+            if (AngConfigManager.genStoreV2rayConfig(index)) {
+                val configContent = app.defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG, "")
+                Utils.setClipboard(app.applicationContext, configContent)
+            } else {
+                return -1
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
     }
 
     /**

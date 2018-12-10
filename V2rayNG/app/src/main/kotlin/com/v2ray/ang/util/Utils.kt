@@ -14,12 +14,14 @@ import kotlin.collections.HashMap
 import android.app.ActivityManager
 import android.content.ClipData
 import android.content.Intent
+import android.content.res.AssetManager
 import android.net.Uri
 import android.os.SystemClock
 import android.text.TextUtils
 import android.util.Log
 import android.util.Patterns
 import android.webkit.URLUtil
+import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.responseLength
@@ -27,7 +29,10 @@ import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.ui.SettingsActivity
 import me.dozen.dpreference.DPreference
 import org.jetbrains.anko.toast
+import java.io.BufferedReader
+import java.io.File
 import java.io.IOException
+import java.io.InputStreamReader
 import java.net.*
 
 
@@ -120,32 +125,20 @@ object Utils {
     /**
      * get remote dns servers from preference
      */
-    fun getRemoteDnsServers(defaultDPreference: DPreference): List<String> {
-        val remoteDns = defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
-        val ret = ArrayList<String>()
-        if (!TextUtils.isEmpty(remoteDns)) {
-            remoteDns
-                    .split(",")
-                    .forEach {
-                        if (Utils.isIpAddress(it)) {
-                            ret.add(it)
-                        }
-                    }
-        }
-
-        if (ret.size <= 0) {
-            if (!ret.contains("8.8.8.8")) {
-                ret.add("8.8.8.8")
-            }
-            if (!ret.contains("8.8.4.4")) {
-                ret.add("8.8.4.4")
-            }
-        }
-//        if (!ret.contains("localhost")) {
-//            ret.add("localhost")
+//    fun getRemoteDnsServers(defaultDPreference: DPreference): List<String> {
+//        val remoteDns = defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
+//        val ret = ArrayList<String>()
+//        if (!TextUtils.isEmpty(remoteDns)) {
+//            remoteDns
+//                    .split(",")
+//                    .forEach {
+//                        if (Utils.isIpAddress(it)) {
+//                            ret.add(it)
+//                        }
+//                    }
 //        }
-        return ret
-    }
+//        return ret
+//    }
 
     /**
      * create qrcode using zxing
@@ -260,7 +253,7 @@ object Utils {
      */
     fun startVService(context: Context): Boolean {
         context.toast(R.string.toast_services_start)
-        if (AngConfigManager.genStoreV2rayConfig()) {
+        if (AngConfigManager.genStoreV2rayConfig(-1)) {
             V2RayVpnService.startV2Ray(context)
             return true
         } else {
@@ -330,7 +323,7 @@ object Utils {
     /**
      * Based on: https://android.googlesource.com/platform/frameworks/base/+/b19a838/services/core/java/com/android/server/connectivity/NetworkMonitor.java#1071
      */
-    fun testConnection(context: Context): String {
+    fun testConnection(context: Context, port: Int): String {
         var result: String
         var conn: HttpURLConnection? = null
 
@@ -341,7 +334,7 @@ object Utils {
 //        Log.d("testConnection", "222222222222")
 
             conn = url.openConnection(Proxy(Proxy.Type.SOCKS,
-                    InetSocketAddress("localhost", 10808)))
+                    InetSocketAddress("localhost", port)))
                     as HttpURLConnection
 //        Log.d("testConnection", "333333333333")
 
@@ -372,6 +365,29 @@ object Utils {
 
         return result
     }
+
+    /**
+     * package path
+     */
+    fun packagePath(context: Context): String {
+        var path = context.filesDir.toString()
+        path = path.replace("files", "")
+        //path += "tun2socks"
+
+        return path
+    }
+
+
+    /**
+     * readTextFromAssets
+     */
+    fun readTextFromAssets(app: AngApplication, fileName: String): String {
+        val content = app.assets.open(fileName).bufferedReader().use {
+            it.readText()
+        }
+        return content
+    }
+
 }
 
 

@@ -1,63 +1,18 @@
 package com.v2ray.ang.util
 
-import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import com.google.gson.Gson
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
-import com.v2ray.ang.dto.AngConfig
+import com.v2ray.ang.dto.AngConfig.VmessBean
 import com.v2ray.ang.dto.V2rayConfig
-import com.v2ray.ang.extension.putOpt
 import com.v2ray.ang.ui.SettingsActivity
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.logging.Logger
 
 object V2rayConfigUtil {
-    private val lib2rayObj: JSONObject by lazy {
-        JSONObject("""{
-                    "enabled": true,
-                    "listener": {
-                    "onUp": "#none",
-                    "onDown": "#none"
-                    },
-                    "env": [
-                    "V2RaySocksPort=10808"
-                    ],
-                    "render": [],
-                    "escort": [],
-                    "vpnservice": {
-                    "Target": "${"$"}{datadir}tun2socks",
-                    "Args": [
-                    "--netif-ipaddr",
-                    "26.26.26.2",
-                    "--netif-netmask",
-                    "255.255.255.0",
-                    "--socks-server-addr",
-                    "127.0.0.1:${"$"}V2RaySocksPort",
-                    "--tunfd",
-                    "3",
-                    "--tunmtu",
-                    "1500",
-                    "--sock-path",
-                    "/dev/null",
-                    "--loglevel",
-                    "4",
-                    "--enable-udprelay"
-                    ],
-                    "VPNSetupArg": "m,1500 a,26.26.26.1,24 r,0.0.0.0,0"
-                    },
-                    "preparedDomainName": {
-                      "domainName": [
-                      ],
-                      "tcpVersion": "tcp4",
-                      "udpVersion": "udp4"
-                    }
-                }""")
-    }
-
     private val requestObj: JSONObject by lazy {
         JSONObject("""{"version":"1.1","method":"GET","path":["/"],"headers":{"User-Agent":["Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46"],"Accept-Encoding":["gzip, deflate"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
     }
@@ -65,56 +20,28 @@ object V2rayConfigUtil {
         JSONObject("""{"version":"1.1","status":"200","reason":"OK","headers":{"Content-Type":["application/octet-stream","video/mpeg"],"Transfer-Encoding":["chunked"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
     }
 
-    private val replacementPairs by lazy {
-        mapOf("port" to 10808,
-                "inbound" to JSONObject("""{
-                    "protocol": "socks",
-                    "listen": "127.0.0.1",
-                    "settings": {
-                        "auth": "noauth",
-                        "udp": true
-                    },
-                    "sniffing": {
-                        "enabled": true,
-                        "destOverride": [
-                            "http",
-                            "tls"
-                        ]
-                    }
-                }"""),
-                //"inboundDetour" to JSONArray(),
-                "#lib2ray" to lib2rayObj,
-                "log" to JSONObject("""{
-                    "loglevel": "warning"
-                }""")
-        )
-    }
-    private val ruleDirectDnsObj: JSONObject by lazy {
-        JSONObject("""{"type":"field","port":53,"network":"udp","outboundTag":"directout"}""")
-    }
-
     data class Result(var status: Boolean, var content: String)
 
     /**
      * 生成v2ray的客户端配置文件
      */
-    fun getV2rayConfig(app: AngApplication, config: AngConfig): Result {
+    fun getV2rayConfig(app: AngApplication, vmess: VmessBean): Result {
         var result = Result(false, "")
         try {
             //检查设置
-            if (config.index < 0
-                    || config.vmess.count() <= 0
-                    || config.index > config.vmess.count() - 1
-            ) {
-                return result
-            }
+//            if (config.index < 0
+//                    || config.vmess.count() <= 0
+//                    || config.index > config.vmess.count() - 1
+//            ) {
+//                return result
+//            }
 
-            if (config.vmess[config.index].configType == AppConfig.EConfigType.Vmess) {
-                result = getV2rayConfigType1(app, config)
-            } else if (config.vmess[config.index].configType == AppConfig.EConfigType.Custom) {
-                result = getV2rayConfigType2(app, config)
-            } else if (config.vmess[config.index].configType == AppConfig.EConfigType.Shadowsocks) {
-                result = getV2rayConfigType1(app, config)
+            if (vmess.configType == AppConfig.EConfigType.Vmess) {
+                result = getV2rayConfigType1(app, vmess)
+            } else if (vmess.configType == AppConfig.EConfigType.Custom) {
+                result = getV2rayConfigType2(app, vmess)
+            } else if (vmess.configType == AppConfig.EConfigType.Shadowsocks) {
+                result = getV2rayConfigType1(app, vmess)
             }
             Log.d("V2rayConfigUtil", result.content)
             return result
@@ -127,19 +54,11 @@ object V2rayConfigUtil {
     /**
      * 生成v2ray的客户端配置文件
      */
-    private fun getV2rayConfigType1(app: AngApplication, config: AngConfig): Result {
+    private fun getV2rayConfigType1(app: AngApplication, vmess: VmessBean): Result {
         val result = Result(false, "")
         try {
-            //检查设置
-            if (config.index < 0
-                    || config.vmess.count() <= 0
-                    || config.index > config.vmess.count() - 1
-            ) {
-                return result
-            }
-
             //取得默认配置
-            val assets = AssetsUtil.readTextFromAssets(app.assets, "v2ray_config.json")
+            val assets = Utils.readTextFromAssets(app, "v2ray_config.json")
             if (TextUtils.isEmpty(assets)) {
                 return result
             }
@@ -150,21 +69,15 @@ object V2rayConfigUtil {
 //                return result
 //            }
 
-            inbound(config, v2rayConfig, app)
+            //inbounds(vmess, v2rayConfig, app)
 
-            //vmess协议服务器配置
-            outbound(config, v2rayConfig, app)
+            outbounds(vmess, v2rayConfig, app)
 
-            //routing
-            routing(config, v2rayConfig, app)
+            routing(vmess, v2rayConfig, app)
 
-            //dns
-            customDns(config, v2rayConfig, app)
+            customDns(vmess, v2rayConfig, app)
 
-            //增加lib2ray
-            val finalConfig = addLib2ray(v2rayConfig, app)
-
-            //Log.d("config", finalConfig)
+            val finalConfig = Gson().toJson(v2rayConfig)
 
             result.status = true
             result.content = finalConfig
@@ -179,25 +92,14 @@ object V2rayConfigUtil {
     /**
      * 生成v2ray的客户端配置文件
      */
-    private fun getV2rayConfigType2(app: AngApplication, config: AngConfig): Result {
+    private fun getV2rayConfigType2(app: AngApplication, vmess: VmessBean): Result {
         val result = Result(false, "")
         try {
-            //检查设置
-            if (config.index < 0
-                    || config.vmess.count() <= 0
-                    || config.index > config.vmess.count() - 1
-            ) {
-                return result
-            }
-            val vmess = config.vmess[config.index]
             val guid = vmess.guid
             val jsonConfig = app.defaultDPreference.getPrefString(AppConfig.ANG_CONFIG + guid, "")
 
-            //增加lib2ray
-            val finalConfig = addLib2ray2(jsonConfig)
-
             result.status = true
-            result.content = finalConfig
+            result.content = jsonConfig
             return result
 
         } catch (e: Exception) {
@@ -209,37 +111,39 @@ object V2rayConfigUtil {
     /**
      *
      */
-    private fun inbound(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
-        try {
-            val lanconnPort = app.defaultDPreference.getPrefString(SettingsActivity.PREF_LANCONN_PORT, "")
-            val port = Utils.parseInt(lanconnPort)
-
-            if (port == 0) {
-                v2rayConfig.inboundDetour = null
-            } else {
-                if (v2rayConfig.inboundDetour!!.isNotEmpty()) {
-                    v2rayConfig.inboundDetour!!.get(0).port = port
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return false
-        }
-        return true
-    }
+//    private fun inbounds(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+//        try {
+//            val socksPort = Utils.parseInt(app.defaultDPreference.getPrefString(SettingsActivity.PREF_SOCKS_PORT, "10808"))
+//            val lanconnPort = Utils.parseInt(app.defaultDPreference.getPrefString(SettingsActivity.PREF_LANCONN_PORT, ""))
+//
+//            if (socksPort > 0) {
+//                v2rayConfig.inbounds[0].port = socksPort
+//            }
+//            if (lanconnPort > 0) {
+//                val httpCopy = v2rayConfig.inbounds[0].copy()
+//                httpCopy.port = lanconnPort
+//                httpCopy.protocol = "http"
+//                v2rayConfig.inbounds.add(httpCopy)
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            return false
+//        }
+//        return true
+//    }
 
     /**
      * vmess协议服务器配置
      */
-    private fun outbound(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+    private fun outbounds(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
-            val vmess = config.vmess[config.index]
+            val outbound = v2rayConfig.outbounds[0]
 
             when (vmess.configType) {
                 AppConfig.EConfigType.Vmess -> {
-                    v2rayConfig.outbound.settings.servers = null
+                    outbound.settings.servers = null
 
-                    val vnext = v2rayConfig.outbound.settings.vnext?.get(0)
+                    val vnext = v2rayConfig.outbounds[0].settings.vnext?.get(0)
                     vnext?.address = vmess.address
                     vnext?.port = vmess.port
                     val user = vnext?.users?.get(0)
@@ -249,18 +153,17 @@ object V2rayConfigUtil {
 
                     //Mux
                     val muxEnabled = false//app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_MUX_ENABLED, false)
-                    v2rayConfig.outbound.mux.enabled = muxEnabled
+                    outbound.mux.enabled = muxEnabled
 
                     //远程服务器底层传输配置
-                    v2rayConfig.outbound.streamSettings = boundStreamSettings(config)
+                    outbound.streamSettings = boundStreamSettings(vmess)
 
-                    v2rayConfig.outbound.protocol = "vmess"
-
+                    outbound.protocol = "vmess"
                 }
                 AppConfig.EConfigType.Shadowsocks -> {
-                    v2rayConfig.outbound.settings.vnext = null
+                    outbound.settings.vnext = null
 
-                    val server = v2rayConfig.outbound.settings.servers?.get(0)
+                    val server = outbound.settings.servers?.get(0)
                     server?.address = vmess.address
                     server?.method = vmess.security
                     server?.ota = false
@@ -269,34 +172,17 @@ object V2rayConfigUtil {
                     server?.level = 1
 
                     //Mux
-                    v2rayConfig.outbound.mux.enabled = false
+                    outbound.mux.enabled = false
 
-                    v2rayConfig.outbound.protocol = "shadowsocks"
-
+                    outbound.protocol = "shadowsocks"
                 }
                 else -> {
                 }
             }
 
-            //如果非ip
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (!Utils.isIpAddress(vmess.address)) {
-                    val addr = String.format("%s:%s", vmess.address, vmess.port)
-                    val domainName = lib2rayObj.optJSONObject("preparedDomainName")
-                            .optJSONArray("domainName")
-                    if (domainName.length() > 0) {
-                        for (index in 0 until domainName.length()) {
-                            domainName.remove(index)
-                        }
-                    }
-                    domainName.put(addr)
-                }
-            } else {
-                if (!Utils.isIpAddress(vmess.address)) {
-                    lib2rayObj.optJSONObject("preparedDomainName")
-                            .optJSONArray("domainName")
-                            .put(String.format("%s:%s", vmess.address, vmess.port))
-                }
+            if (!Utils.isIpAddress(vmess.address)) {
+//                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, String.format("%s:%s", vmess.address, vmess.port))
+                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, vmess.address)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -308,12 +194,12 @@ object V2rayConfigUtil {
     /**
      * 远程服务器底层传输配置
      */
-    private fun boundStreamSettings(config: AngConfig): V2rayConfig.OutboundBean.StreamSettingsBean {
+    private fun boundStreamSettings(vmess: VmessBean): V2rayConfig.OutboundBean.StreamSettingsBean {
         val streamSettings = V2rayConfig.OutboundBean.StreamSettingsBean("", "", null, null, null, null, null)
         try {
             //远程服务器底层传输配置
-            streamSettings.network = config.vmess[config.index].network
-            streamSettings.security = config.vmess[config.index].streamSecurity
+            streamSettings.network = vmess.network
+            streamSettings.security = vmess.streamSecurity
 
             //streamSettings
             when (streamSettings.network) {
@@ -327,14 +213,14 @@ object V2rayConfigUtil {
                     kcpsettings.readBufferSize = 1
                     kcpsettings.writeBufferSize = 1
                     kcpsettings.header = V2rayConfig.OutboundBean.StreamSettingsBean.KcpsettingsBean.HeaderBean()
-                    kcpsettings.header.type = config.vmess[config.index].headerType
+                    kcpsettings.header.type = vmess.headerType
                     streamSettings.kcpsettings = kcpsettings
                 }
                 "ws" -> {
                     val wssettings = V2rayConfig.OutboundBean.StreamSettingsBean.WssettingsBean()
                     wssettings.connectionReuse = true
-                    val host = config.vmess[config.index].requestHost.trim()
-                    val path = config.vmess[config.index].path.trim()
+                    val host = vmess.requestHost.trim()
+                    val path = vmess.path.trim()
 
                     if (!TextUtils.isEmpty(host)) {
                         wssettings.headers = V2rayConfig.OutboundBean.StreamSettingsBean.WssettingsBean.HeadersBean()
@@ -351,8 +237,8 @@ object V2rayConfigUtil {
                 }
                 "h2" -> {
                     val httpsettings = V2rayConfig.OutboundBean.StreamSettingsBean.HttpsettingsBean()
-                    val host = config.vmess[config.index].requestHost.trim()
-                    val path = config.vmess[config.index].path.trim()
+                    val host = vmess.requestHost.trim()
+                    val path = vmess.path.trim()
 
                     if (!TextUtils.isEmpty(host)) {
                         httpsettings.host = host.split(",").map { it.trim() }
@@ -366,16 +252,16 @@ object V2rayConfigUtil {
                 }
                 else -> {
                     //tcp带http伪装
-                    if (config.vmess[config.index].headerType == "http") {
+                    if (vmess.headerType == "http") {
                         val tcpSettings = V2rayConfig.OutboundBean.StreamSettingsBean.TcpsettingsBean()
                         tcpSettings.connectionReuse = true
                         tcpSettings.header = V2rayConfig.OutboundBean.StreamSettingsBean.TcpsettingsBean.HeaderBean()
-                        tcpSettings.header.type = config.vmess[config.index].headerType
+                        tcpSettings.header.type = vmess.headerType
 
                         if (requestObj.has("headers")
                                 || requestObj.optJSONObject("headers").has("Pragma")) {
                             val arrHost = JSONArray()
-                            config.vmess[config.index].requestHost
+                            vmess.requestHost
                                     .split(",")
                                     .forEach {
                                         arrHost.put(it)
@@ -399,7 +285,7 @@ object V2rayConfigUtil {
     /**
      * routing
      */
-    private fun routing(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+    private fun routing(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
             routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_AGENT, ""), AppConfig.TAG_AGENT, v2rayConfig)
             routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_DIRECT, ""), AppConfig.TAG_DIRECT, v2rayConfig)
@@ -409,27 +295,16 @@ object V2rayConfigUtil {
             when (routingMode) {
                 "0" -> {
                 }
-                "1", "2" -> {
-                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
+                "1" -> {
                     routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
                 }
-//                "2" -> {
-//                    routingGeo("", "custom:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
-//                    routingGeo("", "surge:reject", AppConfig.TAG_BLOCKED, v2rayConfig)
-//
-//                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("", "custom:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("", "surge:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
-//                    routingGeo("domain", "gfwlist:direct", AppConfig.TAG_DIRECT, v2rayConfig)
-//
-//                    routingGeo("", "custom:proxy", AppConfig.TAG_AGENT, v2rayConfig)
-//                    routingGeo("", "surge:proxy", AppConfig.TAG_AGENT, v2rayConfig)
-//                    routingGeo("domain", "gfwlist:proxy", AppConfig.TAG_AGENT, v2rayConfig)
-//                }
+                "2" -> {
+                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
+                }
+                "3" -> {
+                    routingGeo("ip", "private", AppConfig.TAG_DIRECT, v2rayConfig)
+                    routingGeo("", "cn", AppConfig.TAG_DIRECT, v2rayConfig)
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -489,7 +364,8 @@ object V2rayConfigUtil {
                             } else if (Utils.isValidUrl(it)
                                     || it.startsWith("geosite:")
                                     || it.startsWith("regexp:")
-                                    || it.startsWith("domain:")) {
+                                    || it.startsWith("domain:")
+                                    || it.startsWith("full:")) {
                                 rulesDomain.domain?.add(it)
                             }
                         }
@@ -500,8 +376,6 @@ object V2rayConfigUtil {
                     v2rayConfig.routing.settings.rules.add(rulesIP)
                 }
             }
-
-
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -510,74 +384,32 @@ object V2rayConfigUtil {
     /**
      * Custom Dns
      */
-    private fun customDns(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+    private fun customDns(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
-            v2rayConfig.dns.servers = Utils.getRemoteDnsServers(app.defaultDPreference)
+            val servers = ArrayList<Any>()
+            servers.add("1.1.1.1")
+            val server = V2rayConfig.DnsBean.ServersBean("223.5.5.5", 53, arrayListOf("geosite:cn"))
+            servers.add(server)
+            v2rayConfig.dns = V2rayConfig.DnsBean(servers)
+
+//            val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
+//            if (dns.count() > 0) {
+//                v2rayConfig.dns = V2rayConfig.DnsBean(Utils.getRemoteDnsServers(app.defaultDPreference))
+
+//                val servers = ArrayList<V2rayConfig.DnsBean.ServersBean>()
+//                dns.forEach {
+//                    val one = V2rayConfig.DnsBean.ServersBean()
+//                    one.address = it
+//                    one.port = 53
+//                    servers.add(one)
+//                }
+//                v2rayConfig.dns = V2rayConfig.DnsBean(servers)
+//            }
         } catch (e: Exception) {
             e.printStackTrace()
             return false
         }
         return true
-    }
-
-
-    /**
-     * 增加lib2ray
-     */
-    private fun addLib2ray(v2rayConfig: V2rayConfig, app: AngApplication): String {
-        try {
-            val conf = Gson().toJson(v2rayConfig)
-            val jObj = JSONObject(conf)
-            jObj.put("#lib2ray", lib2rayObj)
-
-//            val speedupDomain = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_SPEEDUP_DOMAIN, false)
-//            if (speedupDomain) {
-//                jObj.optJSONObject("routing")
-//                        .optJSONObject("settings")
-//                        .optJSONArray("rules")
-//                        .put(0, ruleDirectDnsObj)
-//            }
-
-            return jObj.toString()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ""
-        }
-    }
-
-    /**
-     * 增加lib2ray
-     */
-    private fun addLib2ray2(jsonConfig: String): String {
-        try {
-            val jObj = JSONObject(jsonConfig)
-            //find outbound address and port
-            try {
-                if (jObj.has("outbound")
-                        || jObj.optJSONObject("outbound").has("settings")
-                        || jObj.optJSONObject("outbound").optJSONObject("settings").has("vnext")) {
-                    val vnext = jObj.optJSONObject("outbound").optJSONObject("settings").optJSONArray("vnext")
-                    for (i in 0..(vnext.length() - 1)) {
-                        val item = vnext.getJSONObject(i)
-                        val address = item.getString("address")
-                        val port = item.getString("port")
-                        if (!Utils.isIpAddress(address)) {
-                            lib2rayObj.optJSONObject("preparedDomainName")
-                                    .optJSONArray("domainName")
-                                    .put(String.format("%s:%s", address, port))
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            jObj.putOpt(replacementPairs)
-            return jObj.toString()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ""
-        }
     }
 
     /**
@@ -586,7 +418,10 @@ object V2rayConfigUtil {
     fun isValidConfig(conf: String): Boolean {
         try {
             val jObj = JSONObject(conf)
-            return jObj.has("outbound") and jObj.has("inbound")
+            var hasBound = false
+            //hasBound = (jObj.has("outbounds") and jObj.has("inbounds")) or (jObj.has("outbound") and jObj.has("inbound"))
+            hasBound = (jObj.has("outbounds")) or (jObj.has("outbound"))
+            return hasBound
         } catch (e: JSONException) {
             return false
         }
