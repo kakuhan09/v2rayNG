@@ -30,7 +30,6 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.lang.ref.SoftReference
 import tun2socks.PacketFlow
-import tun2socks.Tun2socks
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import kotlin.concurrent.thread
@@ -164,8 +163,8 @@ class V2RayVpnService : VpnService() {
             return
         }
 
-        inputStream = FileInputStream(pfd?.fileDescriptor)
-        outputStream = FileOutputStream(pfd?.fileDescriptor)
+        inputStream = FileInputStream(pfd!!.fileDescriptor)
+        outputStream = FileOutputStream(pfd!!.fileDescriptor)
 
         val flow = Flow(outputStream)
         val service = Service(this)
@@ -188,7 +187,7 @@ class V2RayVpnService : VpnService() {
 
         Log.d(TAG, "start Tun2socks")
         //tun2socks.Tun2socks.startV2Ray(flow, service, configContent.toByteArray(), filesDir.absolutePath)
-        Tun2socks.startV2Ray(flow, service, configContent.toByteArray(), filesDir.absolutePath, serverDomains, serverIPs)
+        tun2socks.Tun2socks.startV2Ray(flow, service, configContent.toByteArray(), filesDir.absolutePath, serverDomains, serverIPs)
         Log.d(TAG, "success Tun2socks")
         isRunning = true
 
@@ -223,7 +222,7 @@ class V2RayVpnService : VpnService() {
 
         if (isRunning) {
             isRunning = false
-            Tun2socks.stopV2Ray()
+            tun2socks.Tun2socks.stopV2Ray()
             pfd?.close()
             pfd = null
             inputStream = null
