@@ -123,6 +123,7 @@ class V2RayVpnService : VpnService() {
         }
         Log.d(TAG, "get InetAddress ok")
 
+
         val builder = Builder()
         builder.setSession("vv")
                 .setMtu(1500)
@@ -152,6 +153,16 @@ class V2RayVpnService : VpnService() {
 
         pfd = builder.establish()
         Log.d(TAG, "pfd:" + pfd.toString())
+
+        // Put the tunFd in blocking mode. Since we are reading packets from this fd in the
+        // main loop, failing to do this will cause very high CPU utilization, which is
+        // absolutely not what we want. Doing this in Go code because Android only has
+        // limited support for this feature, which requires API level >= 21.
+        if ((pfd == null) || !tun2socks.Tun2socks.setNonblock(pfd!!.fd.toLong(), false)) {
+            Log.d(TAG, "failed to put tunFd in blocking mode")
+            MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_FAILURE, "")
+            return
+        }
 
         inputStream = FileInputStream(pfd?.fileDescriptor)
         outputStream = FileOutputStream(pfd?.fileDescriptor)
@@ -236,10 +247,10 @@ class V2RayVpnService : VpnService() {
         }
     }
 
-    class Service(service: VpnService) : tun2socks.VpnService {
+    class Service(service: VpnService) : Tun2socksVpnService {
         val vpnService = service
-        override fun protect(fd: Long) {
-            vpnService.protect(fd.toInt())
+        override fun protect(fd: Long): Boolean {
+            return vpnService.protect(fd.toInt())
         }
     }
 
