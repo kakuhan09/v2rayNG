@@ -125,20 +125,21 @@ object Utils {
     /**
      * get remote dns servers from preference
      */
-//    fun getRemoteDnsServers(defaultDPreference: DPreference): List<String> {
-//        val remoteDns = defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
-//        val ret = ArrayList<String>()
-//        if (!TextUtils.isEmpty(remoteDns)) {
-//            remoteDns
-//                    .split(",")
-//                    .forEach {
-//                        if (Utils.isIpAddress(it)) {
-//                            ret.add(it)
-//                        }
-//                    }
-//        }
-//        return ret
-//    }
+    fun getRemoteDnsServers(defaultDPreference: DPreference): List<String> {
+        val remoteDns = defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
+        val ret = ArrayList<String>()
+        if (!TextUtils.isEmpty(remoteDns)) {
+            remoteDns
+                    .split(",")
+                    .forEach {
+                        if (Utils.isIpAddress(it)) {
+                            ret.add(it)
+                        }
+                    }
+        }
+        ret.add("1.1.1.1")
+        return ret
+    }
 
     /**
      * create qrcode using zxing

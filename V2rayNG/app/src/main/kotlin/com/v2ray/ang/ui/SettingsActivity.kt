@@ -26,7 +26,7 @@ class SettingsActivity : BaseActivity() {
         const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
 //        const val PREF_MUX_ENAimport libv2ray.Libv2rayBLED = "pref_mux_enabled"
         const val PREF_SPEED_ENABLED = "pref_speed_enabled"
-//        const val PREF_REMOTE_DNS = "pref_remote_dns"
+        const val PREF_REMOTE_DNS = "pref_remote_dns"
 
 //        const val PREF_SOCKS_PORT = "pref_socks_port"
 //        const val PREF_LANCONN_PORT = "pref_lanconn_port"
@@ -54,7 +54,7 @@ class SettingsActivity : BaseActivity() {
     class SettingsFragment : PreferenceFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
         val perAppProxy by lazy { findPreference(PREF_PER_APP_PROXY) as CheckBoxPreference }
         //        val autoRestart by lazy { findPreference(PREF_AUTO_RESTART) as CheckBoxPreference }
-//        val remoteDns by lazy { findPreference(PREF_REMOTE_DNS) as EditTextPreference }
+        val remoteDns by lazy { findPreference(PREF_REMOTE_DNS) as EditTextPreference }
 
 //        val socksPort by lazy { findPreference(PREF_SOCKS_PORT) as EditTextPreference }
 //        val lanconnPort by lazy { findPreference(PREF_LANCONN_PORT) as EditTextPreference }
@@ -106,10 +106,10 @@ class SettingsActivity : BaseActivity() {
                 false
             }
 
-//            remoteDns.setOnPreferenceChangeListener { preference, any ->
-//                remoteDns.summary = any as String
-//                true
-//            }
+            remoteDns.setOnPreferenceChangeListener { preference, any ->
+                remoteDns.summary = any as String
+                true
+            }
 //            socksPort.setOnPreferenceChangeListener { preference, any ->
 //                socksPort.summary = any as String
 //                true
@@ -119,14 +119,14 @@ class SettingsActivity : BaseActivity() {
 //                true
 //            }
 
-            version.summary = "${BuildConfig.VERSION_NAME} (Core V4.3)"
+            version.summary = "${BuildConfig.VERSION_NAME} (Core V4.9)"
         }
 
         override fun onStart() {
             super.onStart()
 
             perAppProxy.isChecked = defaultSharedPreferences.getBoolean(PREF_PER_APP_PROXY, false)
-//            remoteDns.summary = defaultSharedPreferences.getString(PREF_REMOTE_DNS, "")
+            remoteDns.summary = defaultSharedPreferences.getString(PREF_REMOTE_DNS, "")
 
 //            socksPort.summary = defaultSharedPreferences.getString(PREF_SOCKS_PORT, "10808")
 //            lanconnPort.summary = defaultSharedPreferences.getString(PREF_LANCONN_PORT, "")
