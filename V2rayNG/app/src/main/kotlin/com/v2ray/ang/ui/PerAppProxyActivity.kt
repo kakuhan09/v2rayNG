@@ -50,19 +50,37 @@ class PerAppProxyActivity : BaseActivity() {
                 this, LinearDividerItemDecoration.LINEAR_DIVIDER_VERTICAL)
         recycler_view.addItemDecoration(dividerItemDecoration)
 
+        val blacklist = defaultDPreference.getPrefStringSet(PREF_PER_APP_PROXY_SET, null)
+
         AppManagerUtil.rxLoadNetworkAppList(this)
                 .subscribeOn(Schedulers.io())
                 .map {
+                    it.forEach { one ->
+                        if ((blacklist?.contains(one.packageName)!!)) {
+                            one.isSelected = 1
+                        } else {
+                            one.isSelected = 0
+                        }
+                    }
                     val comparator = object : Comparator<AppInfo> {
-                        val collator = Collator.getInstance()
-                        override fun compare(o1: AppInfo, o2: AppInfo) = collator.compare(o1.appName, o2.appName)
+                        override fun compare(p1: AppInfo, p2: AppInfo): Int = when {
+                            p1.isSelected > p2.isSelected -> -1
+                            p1.isSelected == p2.isSelected -> 0
+                            else -> 1
+                        }
                     }
                     it.sortedWith(comparator)
                 }
+//                .map {
+//                    val comparator = object : Comparator<AppInfo> {
+//                        val collator = Collator.getInstance()
+//                        override fun compare(o1: AppInfo, o2: AppInfo) = collator.compare(o1.appName, o2.appName)
+//                    }
+//                    it.sortedWith(comparator)
+//                }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     appsAll = it
-                    val blacklist = defaultDPreference.getPrefStringSet(PREF_PER_APP_PROXY_SET, null)
                     adapter = PerAppProxyAdapter(this, it, blacklist)
                     recycler_view.adapter = adapter
                     pb_waiting.visibility = View.GONE
@@ -249,5 +267,4 @@ class PerAppProxyActivity : BaseActivity() {
         }
         return true
     }
-
 }

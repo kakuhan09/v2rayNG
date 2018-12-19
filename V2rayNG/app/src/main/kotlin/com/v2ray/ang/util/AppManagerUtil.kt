@@ -10,7 +10,7 @@ import rx.Observable
 import java.util.*
 
 object AppManagerUtil {
-    fun loadNetworkAppList(ctx: Context): List<AppInfo> {
+    fun loadNetworkAppList(ctx: Context): ArrayList<AppInfo> {
         val packageManager = ctx.packageManager
         val packages = packageManager.getInstalledPackages(PackageManager.GET_PERMISSIONS)
         val apps = ArrayList<AppInfo>()
@@ -31,7 +31,7 @@ object AppManagerUtil {
         return apps
     }
 
-    fun rxLoadNetworkAppList(ctx: Context): Observable<List<AppInfo>> = Observable.create {
+    fun rxLoadNetworkAppList(ctx: Context): Observable<ArrayList<AppInfo>> = Observable.create {
         it.onNext(loadNetworkAppList(ctx))
     }
 

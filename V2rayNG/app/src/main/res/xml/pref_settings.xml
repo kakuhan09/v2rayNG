@@ -20,6 +20,11 @@
             android:summary="@string/summary_pref_speed_enabled"
             android:title="@string/title_pref_speed_enabled" />
 
+        <CheckBoxPreference
+            android:key="pref_local_dns_enabled"
+            android:summary="@string/summary_pref_local_dns_enabled"
+            android:title="@string/title_pref_local_dns_enabled" />
+
         <EditTextPreference
             android:key="pref_remote_dns"
             android:summary="@string/summary_pref_remote_dns"

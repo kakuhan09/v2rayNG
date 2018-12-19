@@ -5,4 +5,5 @@ import android.graphics.drawable.Drawable
 data class AppInfo(val appName: String,
                    val packageName: String,
                    val appIcon: Drawable,
-                   val isSystemApp: Boolean)
+                   val isSystemApp: Boolean,
+                   var isSelected: Int = 0)

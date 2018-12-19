@@ -78,11 +78,14 @@
     <string name="title_pref_per_app_proxy">分应用代理</string>
     <string name="summary_pref_per_app_proxy">分应用代理仅支持 Android 5.0 Lollipop 及更高</string>
 
-    <string name="title_pref_mux_enabled">开启Mux多路复用</string>
+    <string name="title_pref_mux_enabled">启用Mux多路复用</string>
     <string name="summary_pref_mux_enabled">开启可能会加速,关闭可能会减少断流</string>
 
-    <string name="title_pref_speed_enabled">开启速度显示</string>
+    <string name="title_pref_speed_enabled">启用速度显示</string>
     <string name="summary_pref_speed_enabled">在通知中显示当前速度</string>
+
+    <string name="title_pref_local_dns_enabled">启用本地DNS</string>
+    <string name="summary_pref_local_dns_enabled">overture(beta)</string>
 
     <string name="title_pref_routing">路由</string>
     <string name="summary_pref_routing">自定义路由</string>

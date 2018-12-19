@@ -85,6 +85,9 @@
     <string name="title_pref_speed_enabled">Enable speed display</string>
     <string name="summary_pref_speed_enabled">Display current speed in the notification</string>
 
+    <string name="title_pref_local_dns_enabled">Enable local DNS</string>
+    <string name="summary_pref_local_dns_enabled">overture(beta)</string>
+
     <string name="title_pref_routing">Routing</string>
     <string name="summary_pref_routing">Custom routing</string>
 

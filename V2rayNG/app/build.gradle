@@ -12,8 +12,8 @@ android {
         minSdkVersion 17
         targetSdkVersion Integer.parseInt("$targetSdkVer")
         multiDexEnabled true
-        versionCode 144
-        versionName "0.6.4"
+        versionCode 147
+        versionName "0.6.5-beta2"
     }
 
     signingConfigs {
@@ -109,8 +109,8 @@ dependencies {
     implementation 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
     implementation 'com.beust:klaxon:3.0.1'
     implementation 'com.android.support:multidex:1.0.3'
-    //implementation(name: 'libv2ray', ext: 'aar')
-    implementation(name: 'tun2socks', ext: 'aar')
+    implementation(name: 'libv2ray', ext: 'aar')
+    //implementation(name: 'tun2socks', ext: 'aar')
 }
 
 buildscript {

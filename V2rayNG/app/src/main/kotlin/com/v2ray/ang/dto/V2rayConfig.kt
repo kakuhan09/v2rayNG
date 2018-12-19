@@ -2,7 +2,7 @@ package com.v2ray.ang.dto
 
 data class V2rayConfig(
         val log: LogBean,
-        //val inbounds: ArrayList<InboundBean>,
+        val inbounds: ArrayList<InboundBean>,
         var outbounds: ArrayList<OutboundBean>,
         var dns: DnsBean,
         val routing: RoutingBean) {
@@ -99,7 +99,7 @@ data class V2rayConfig(
     data class DnsBean(var servers: List<Any>) {
         data class ServersBean(var address: String = "",
                                var port: Int = 0,
-                               var domains: List<String> = ArrayList<String>())
+                               var domains: List<String>?)
     }
 
     data class RoutingBean(val strategy: String,

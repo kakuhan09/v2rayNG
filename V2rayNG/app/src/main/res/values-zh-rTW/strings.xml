@@ -82,8 +82,11 @@
     <string name="title_pref_mux_enabled">啟用 Mux</string>
     <string name="summary_pref_mux_enabled">啟用或許會加快網路速度，切換或許會閃爍</string>
 
-    <string name="title_pref_speed_enabled">開啟速度顯示</string>
+    <string name="title_pref_speed_enabled">啟用速度顯示</string>
     <string name="summary_pref_speed_enabled">在通知中顯示當前速度</string>
+
+    <string name="title_pref_local_dns_enabled">啟用本地DNS</string>
+    <string name="summary_pref_local_dns_enabled">overture(beta)</string>
 
     <string name="title_pref_routing">路由</string>
     <string name="summary_pref_routing">自訂路由</string>

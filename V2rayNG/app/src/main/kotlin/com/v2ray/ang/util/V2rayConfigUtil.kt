@@ -69,7 +69,7 @@ object V2rayConfigUtil {
 //                return result
 //            }
 
-            //inbounds(vmess, v2rayConfig, app)
+            inbounds(vmess, v2rayConfig, app)
 
             outbounds(vmess, v2rayConfig, app)
 
@@ -111,11 +111,12 @@ object V2rayConfigUtil {
     /**
      *
      */
-//    private fun inbounds(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
-//        try {
+    private fun inbounds(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+        try {
+            v2rayConfig.inbounds[0].port = 10808
 //            val socksPort = Utils.parseInt(app.defaultDPreference.getPrefString(SettingsActivity.PREF_SOCKS_PORT, "10808"))
 //            val lanconnPort = Utils.parseInt(app.defaultDPreference.getPrefString(SettingsActivity.PREF_LANCONN_PORT, ""))
-//
+
 //            if (socksPort > 0) {
 //                v2rayConfig.inbounds[0].port = socksPort
 //            }
@@ -125,12 +126,12 @@ object V2rayConfigUtil {
 //                httpCopy.protocol = "http"
 //                v2rayConfig.inbounds.add(httpCopy)
 //            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            return false
-//        }
-//        return true
-//    }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
 
     /**
      * vmess协议服务器配置
@@ -181,8 +182,8 @@ object V2rayConfigUtil {
             }
 
             if (!Utils.isIpAddress(vmess.address)) {
-//                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, String.format("%s:%s", vmess.address, vmess.port))
-                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, vmess.address)
+                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, String.format("%s:%s", vmess.address, vmess.port))
+//                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, vmess.address)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -387,28 +388,20 @@ object V2rayConfigUtil {
     private fun customDns(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
             val servers = ArrayList<Any>()
-            val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
-            dns.forEach {
-                servers.add(it)
+            val localDns = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_LOCAL_DNS_ENABLED, false)
+            if (localDns) {
+                val serverLoc = V2rayConfig.DnsBean.ServersBean("127.0.0.1", 8053, null)
+                servers.add(serverLoc)
+            } else {
+                val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
+                dns.forEach {
+                    servers.add(it)
+                }
+                val server = V2rayConfig.DnsBean.ServersBean("223.5.5.5", 53, arrayListOf("geosite:cn"))
+                servers.add(server)
             }
 
-            val server = V2rayConfig.DnsBean.ServersBean("223.5.5.5", 53, arrayListOf("geosite:cn"))
-            servers.add(server)
             v2rayConfig.dns = V2rayConfig.DnsBean(servers)
-
-//            val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
-//            if (dns.count() > 0) {
-//                v2rayConfig.dns = V2rayConfig.DnsBean(Utils.getRemoteDnsServers(app.defaultDPreference))
-
-//                val servers = ArrayList<V2rayConfig.DnsBean.ServersBean>()
-//                dns.forEach {
-//                    val one = V2rayConfig.DnsBean.ServersBean()
-//                    one.address = it
-//                    one.port = 53
-//                    servers.add(one)
-//                }
-//                v2rayConfig.dns = V2rayConfig.DnsBean(servers)
-//            }
         } catch (e: Exception) {
             e.printStackTrace()
             return false
