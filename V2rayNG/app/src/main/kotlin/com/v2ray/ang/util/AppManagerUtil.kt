@@ -24,7 +24,7 @@ object AppManagerUtil {
             val appIcon = applicationInfo.loadIcon(packageManager)
             val isSystemApp = (applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) > 0
 
-            val appInfo = AppInfo(appName, pkg.packageName, appIcon, isSystemApp)
+            val appInfo = AppInfo(appName, pkg.packageName, appIcon, isSystemApp, 0)
             apps.add(appInfo)
         }
 
@@ -35,8 +35,9 @@ object AppManagerUtil {
         it.onNext(loadNetworkAppList(ctx))
     }
 
-    val PackageInfo.hasInternetPermission: Boolean get() {
-        val permissions = requestedPermissions
-        return permissions?.any { it == Manifest.permission.INTERNET } ?: false
-    }
+    val PackageInfo.hasInternetPermission: Boolean
+        get() {
+            val permissions = requestedPermissions
+            return permissions?.any { it == Manifest.permission.INTERNET } ?: false
+        }
 }
