@@ -14,12 +14,15 @@ import android.net.VpnService
 import android.os.*
 import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
+import android.text.TextUtils
 import android.util.Log
+import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.VpnBandwidth
 import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.extension.toSpeedString
+import com.v2ray.ang.extension.v2RayApplication
 import com.v2ray.ang.ui.MainActivity
 import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
@@ -157,7 +160,11 @@ class V2RayVpnService : VpnService() {
         v2rayPoint.vpnSupportReady()
         val localDns = defaultDPreference.getPrefBoolean(SettingsActivity.PREF_LOCAL_DNS_ENABLED, false)
         if (localDns) {
-            v2rayPoint.loadLocalDns()
+            var assets = Utils.readTextFromAssets(v2RayApplication, "overture_config.json")
+            if (!TextUtils.isEmpty(assets)) {
+                assets = assets.replace("{datadir}", v2rayPoint.packageName)
+                v2rayPoint.loadLocalDns(assets)
+            }
         }
         if (v2rayPoint.isRunning) {
             MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_SUCCESS, "")
