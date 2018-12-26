@@ -86,7 +86,7 @@
     <string name="summary_pref_speed_enabled">Display current speed in the notification</string>
 
     <string name="title_pref_local_dns_enabled">Enable local DNS</string>
-    <string name="summary_pref_local_dns_enabled">overture(beta)</string>
+    <string name="summary_pref_local_dns_enabled">overture(DNS port:8053)</string>
 
     <string name="title_pref_routing">Routing</string>
     <string name="summary_pref_routing">Custom routing</string>
@@ -95,8 +95,8 @@
     <string name="summary_pref_donate">Donate developer</string>
     <string name="donate_detail">Add some experimental advanced features</string>
 
-    <string name="title_pref_remote_dns">Remote DNS(Can not fill)</string>
-    <string name="summary_pref_remote_dns">Remote DNS</string>
+    <string name="title_pref_remote_dns">DNS(Optional)</string>
+    <string name="summary_pref_remote_dns">DNS</string>
 
     <string name="title_pref_socks_port">SOCKS5 proxy port</string>
     <string name="summary_pref_socks_port">SOCKS5 proxy port</string>

@@ -388,18 +388,22 @@ object V2rayConfigUtil {
     private fun customDns(vmess: VmessBean, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
             val servers = ArrayList<Any>()
-            val localDns = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_LOCAL_DNS_ENABLED, false)
-            if (localDns) {
-                val serverLoc = V2rayConfig.DnsBean.ServersBean("127.0.0.1", 8053, null)
-                servers.add(serverLoc)
-            } else {
-                val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
-                dns.forEach {
-                    servers.add(it)
-                }
-                val server = V2rayConfig.DnsBean.ServersBean("223.5.5.5", 53, arrayListOf("geosite:cn"))
-                servers.add(server)
+            val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
+            dns.forEach {
+                servers.add(it)
             }
+//            val localDns = app.defaultDPreference.getPrefBoolean(SettingsActivity.PREF_LOCAL_DNS_ENABLED, false)
+//            if (localDns) {
+//                val serverLoc = V2rayConfig.DnsBean.ServersBean("127.0.0.1", 8053, null)
+//                servers.add(serverLoc)
+//            } else {
+//                val dns = Utils.getRemoteDnsServers(app.defaultDPreference)
+//                dns.forEach {
+//                    servers.add(it)
+//                }
+//                //val server = V2rayConfig.DnsBean.ServersBean("223.5.5.5", 53, arrayListOf("geosite:cn"))
+//                //servers.add(server)
+//            }
 
             v2rayConfig.dns = V2rayConfig.DnsBean(servers)
         } catch (e: Exception) {

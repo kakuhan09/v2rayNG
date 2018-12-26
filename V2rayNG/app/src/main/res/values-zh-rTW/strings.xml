@@ -86,7 +86,7 @@
     <string name="summary_pref_speed_enabled">在通知中顯示當前速度</string>
 
     <string name="title_pref_local_dns_enabled">啟用本地DNS</string>
-    <string name="summary_pref_local_dns_enabled">overture(beta)</string>
+    <string name="summary_pref_local_dns_enabled">overture(DNS端口:8053)</string>
 
     <string name="title_pref_routing">路由</string>
     <string name="summary_pref_routing">自訂路由</string>
@@ -95,8 +95,8 @@
     <string name="summary_pref_donate">向開發人員捐款</string>
     <string name="donate_detail">新增一些實驗性進階功能</string>
 
-    <string name="title_pref_remote_dns">遠端 DNS(可以不填)</string>
-    <string name="summary_pref_remote_dns">遠端 DNS</string>
+    <string name="title_pref_remote_dns">DNS(可选)</string>
+    <string name="summary_pref_remote_dns">DNS</string>
 
     <string name="title_pref_socks_port">SOCKS5代理端口</string>
     <string name="summary_pref_socks_port">SOCKS5代理端口</string>
