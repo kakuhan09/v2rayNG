@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 27
@@ -12,7 +11,7 @@ android {
         minSdkVersion 17
         targetSdkVersion Integer.parseInt("$targetSdkVer")
         multiDexEnabled true
-        versionCode 152
+        versionCode 154
         versionName "0.6.7"
     }
 
@@ -97,13 +96,6 @@ dependencies {
     implementation 'com.tbruyelle.rxpermissions:rxpermissions:0.9.4@aar'
     implementation 'com.dinuscxj:recycleritemdecoration:1.0.0'
     implementation 'io.reactivex:rxkotlin:0.60.0'
-    //    // LeakCanary
-    //    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.4'
-    //    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
-    //    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
-    // Firebase
-    implementation "com.google.firebase:firebase-core:$firebaseVersion"
-    implementation "com.google.firebase:firebase-crash:$firebaseVersion"
     implementation 'me.dm7.barcodescanner:core:1.9.8'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
