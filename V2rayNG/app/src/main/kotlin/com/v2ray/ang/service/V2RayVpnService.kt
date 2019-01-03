@@ -97,10 +97,10 @@ class V2RayVpnService : VpnService() {
                 }
 
         builder.setSession(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
-//        val dnsServers = Utils.getRemoteDnsServers(defaultDPreference)
-//        for (dns in dnsServers) {
-//            builder.addDnsServer(dns)
-//        }
+        val dnsServers = Utils.getRemoteDnsServers(defaultDPreference)
+        for (dns in dnsServers) {
+            builder.addDnsServer(dns)
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
                 defaultDPreference.getPrefBoolean(SettingsActivity.PREF_PER_APP_PROXY, false)) {
