@@ -139,6 +139,7 @@
     <string name="routing_settings_delete">清除</string>
     <string name="routing_settings_scan_replace">掃描並取代</string>
     <string name="routing_settings_scan_append">掃描並附加</string>
+    <string name="routing_settings_default_rules">設置默認路由規則</string>
 
     <string name="connection_test_pending">"檢查連線能力"</string>
     <string name="connection_test_testing">"測試中……"</string>

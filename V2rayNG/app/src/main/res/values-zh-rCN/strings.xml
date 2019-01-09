@@ -138,6 +138,7 @@
     <string name="routing_settings_delete">清空</string>
     <string name="routing_settings_scan_replace">扫描并替换</string>
     <string name="routing_settings_scan_append">扫描并追加</string>
+    <string name="routing_settings_default_rules">设置默认路由规则</string>
 
     <string name="connection_test_pending">"检查网络连接"</string>
     <string name="connection_test_testing">"测试中…"</string>

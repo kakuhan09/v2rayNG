@@ -139,6 +139,7 @@
     <string name="routing_settings_delete">Clear</string>
     <string name="routing_settings_scan_replace">Scan and replace</string>
     <string name="routing_settings_scan_append">Scan and append</string>
+    <string name="routing_settings_default_rules"> set default routing rules</string>
 
     <string name="connection_test_pending">Check Connectivity</string>
     <string name="connection_test_testing">Testing…</string>

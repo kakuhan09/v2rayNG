@@ -34,6 +34,8 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 
 object Utils {
@@ -176,30 +178,43 @@ object Utils {
      */
     fun isIpAddress(value: String): Boolean {
         try {
+            var addr = value
+            if (addr.length < 7 || "".equals(addr)) {
+                return false
+            }
+            //CIDR
+            if (addr.indexOf("/") > 0) {
+                val arr = addr.split("/")
+                if (arr.count() == 2 && Integer.parseInt(arr[1]) > 0) {
+                    addr = arr[0]
+                }
+            }
+
             var start = 0
-            var end = value.indexOf('.')
+            var end = addr.indexOf('.')
             var numBlocks = 0
 
-            while (start < value.length) {
-
+            while (start < addr.length) {
                 if (end == -1) {
-                    end = value.length
+                    end = addr.length
                 }
-
                 try {
-                    val block = Integer.parseInt(value.substring(start, end))
+                    val block = Integer.parseInt(addr.substring(start, end))
                     if (block > 255 || block < 0) {
                         return false
                     }
                 } catch (e: NumberFormatException) {
                     return false
                 }
-
                 numBlocks++
                 start = end + 1
-                end = value.indexOf('.', start)
+                end = addr.indexOf('.', start)
             }
             return numBlocks == 4
+//            val rexp = """([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}"""
+//            val pat = Pattern.compile(rexp)
+//            val mat = pat.matcher(addr)
+//            return mat.find()
         } catch (e: WriterException) {
             e.printStackTrace()
             return false

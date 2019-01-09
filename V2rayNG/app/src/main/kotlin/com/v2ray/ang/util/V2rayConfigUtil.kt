@@ -43,7 +43,7 @@ object V2rayConfigUtil {
             } else if (vmess.configType == AppConfig.EConfigType.Shadowsocks) {
                 result = getV2rayConfigType1(app, vmess)
             }
-            Log.d("V2rayConfigUtil", result.content)
+            Log.d("V2rayConfigUtilGoLog", result.content)
             return result
         } catch (e: Exception) {
             e.printStackTrace()
@@ -357,7 +357,7 @@ object V2rayConfigUtil {
                 rulesIP.outboundTag = tag
                 rulesIP.ip = ArrayList<String>()
 
-                userRule
+                userRule.trim().replace("\n", "")
                         .split(",")
                         .forEach {
                             if (Utils.isIpAddress(it) || it.startsWith("geoip:")) {

@@ -23,6 +23,7 @@ import java.text.Collator
 import java.util.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.AppInfo
 import com.v2ray.ang.extension.v2RayApplication
 import com.v2ray.ang.util.Utils
@@ -218,7 +219,7 @@ class PerAppProxyActivity : BaseActivity() {
 
     private fun selectProxyApp() {
         toast(R.string.msg_downloading_content)
-        val url = "https://raw.githubusercontent.com/2dust/androidpackagenamelist/master/proxy.txt"
+        val url = AppConfig.androidpackagenamelistUrl
         doAsync {
             val content = URL(url).readText()
             uiThread {

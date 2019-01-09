@@ -29,6 +29,9 @@ object AppConfig {
     const val TAG_DIRECT = "direct"
     const val TAG_BLOCKED = "block"
 
+    const val androidpackagenamelistUrl = "https://raw.githubusercontent.com/2dust/androidpackagenamelist/master/proxy.txt"
+    const val v2rayCustomRoutingListUrl = "https://raw.githubusercontent.com/2dust/v2rayCustomRoutingList/master/"
+
     const val MSG_REGISTER_CLIENT = 1
     const val MSG_STATE_RUNNING = 11
     const val MSG_STATE_NOT_RUNNING = 12

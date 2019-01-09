@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.text.TextUtils
+import android.util.Log
 import android.view.*
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
@@ -15,8 +16,13 @@ import kotlinx.android.synthetic.main.fragment_routing_settings.*
 import org.jetbrains.anko.toast
 import android.view.MenuInflater
 import com.tbruyelle.rxpermissions.RxPermissions
+import com.v2ray.ang.AppConfig
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.startActivityForResult
 import org.jetbrains.anko.support.v4.startActivityForResult
+import org.jetbrains.anko.support.v4.toast
+import org.jetbrains.anko.uiThread
+import java.net.URL
 
 
 class RoutingSettingsFragment : Fragment() {
@@ -73,7 +79,10 @@ class RoutingSettingsFragment : Fragment() {
             scanQRcode(REQUEST_SCAN_APPEND)
             true
         }
-
+        R.id.default_rules -> {
+            setDefaultRules()
+            true
+        }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -83,15 +92,40 @@ class RoutingSettingsFragment : Fragment() {
 //                    .addCategory(Intent.CATEGORY_DEFAULT)
 //                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
 //        } catch (e: Exception) {
-            RxPermissions(activity!!)
-                    .request(Manifest.permission.CAMERA)
-                    .subscribe {
-                        if (it)
-                            startActivityForResult<ScannerActivity>(requestCode)
-                        else
-                            activity?.toast(R.string.toast_permission_denied)
-                    }
+        RxPermissions(activity!!)
+                .request(Manifest.permission.CAMERA)
+                .subscribe {
+                    if (it)
+                        startActivityForResult<ScannerActivity>(requestCode)
+                    else
+                        activity?.toast(R.string.toast_permission_denied)
+                }
 //        }
+        return true
+    }
+
+    fun setDefaultRules(): Boolean {
+        var url = AppConfig.v2rayCustomRoutingListUrl
+        when (arguments!!.getString(routing_arg)) {
+            AppConfig.PREF_V2RAY_ROUTING_AGENT -> {
+                url += AppConfig.TAG_AGENT
+            }
+            AppConfig.PREF_V2RAY_ROUTING_DIRECT -> {
+                url += AppConfig.TAG_DIRECT
+            }
+            AppConfig.PREF_V2RAY_ROUTING_BLOCKED -> {
+                url += AppConfig.TAG_BLOCKED
+            }
+        }
+
+        toast(R.string.msg_downloading_content)
+        doAsync {
+            val content = URL(url).readText()
+            uiThread {
+                et_routing_content.text = Utils.getEditable(content!!)
+                toast(R.string.toast_success)
+            }
+        }
         return true
     }
 

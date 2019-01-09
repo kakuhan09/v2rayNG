@@ -23,4 +23,9 @@
         android:title="@string/routing_settings_scan_append"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/default_rules"
+        android:title="@string/routing_settings_default_rules"
+        app:showAsAction="never" />
+
 </menu>
