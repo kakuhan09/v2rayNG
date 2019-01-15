@@ -102,17 +102,13 @@ data class V2rayConfig(
                                var domains: List<String>?)
     }
 
-    data class RoutingBean(val strategy: String,
-                           val settings: SettingsBean) {
+    data class RoutingBean(var domainStrategy: String,
+                           var rules: ArrayList<RulesBean>) {
 
-        data class SettingsBean(val domainStrategy: String,
-                                var rules: ArrayList<RulesBean>) {
-
-            data class RulesBean(var type: String,
-                    //var port: String,
-                                 var ip: ArrayList<String>?,
-                                 var domain: ArrayList<String>?,
-                                 var outboundTag: String)
-        }
+        data class RulesBean(var type: String,
+                //var port: String,
+                             var ip: ArrayList<String>?,
+                             var domain: ArrayList<String>?,
+                             var outboundTag: String)
     }
 }

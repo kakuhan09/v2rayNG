@@ -59,4 +59,10 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+
+    <string-array name="routing_domain_strategy" translatable="false">
+        <item>AsIs</item>
+        <item>IPIfNonMatch</item>
+        <item>IPOnDemand</item>
+    </string-array>
 </resources>

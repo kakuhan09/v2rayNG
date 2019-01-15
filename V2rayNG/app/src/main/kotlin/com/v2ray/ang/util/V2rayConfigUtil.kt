@@ -292,6 +292,7 @@ object V2rayConfigUtil {
             routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_DIRECT, ""), AppConfig.TAG_DIRECT, v2rayConfig)
             routingUserRule(app.defaultDPreference.getPrefString(AppConfig.PREF_V2RAY_ROUTING_BLOCKED, ""), AppConfig.TAG_BLOCKED, v2rayConfig)
 
+            v2rayConfig.routing.domainStrategy = app.defaultDPreference.getPrefString(SettingsActivity.PREF_ROUTING_DOMAIN_STRATEGY, "IPIfNonMatch")
             val routingMode = app.defaultDPreference.getPrefString(SettingsActivity.PREF_ROUTING_MODE, "0")
             when (routingMode) {
                 "0" -> {
@@ -319,22 +320,22 @@ object V2rayConfigUtil {
             if (!TextUtils.isEmpty(code)) {
                 //IP
                 if (ipOrDomain == "ip" || ipOrDomain == "") {
-                    val rulesIP = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                    val rulesIP = V2rayConfig.RoutingBean.RulesBean("", null, null, "")
                     rulesIP.type = "field"
                     rulesIP.outboundTag = tag
                     rulesIP.ip = ArrayList<String>()
                     rulesIP.ip?.add("geoip:$code")
-                    v2rayConfig.routing.settings.rules.add(rulesIP)
+                    v2rayConfig.routing.rules.add(rulesIP)
                 }
 
                 if (ipOrDomain == "domain" || ipOrDomain == "") {
                     //Domain
-                    val rulesDomain = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                    val rulesDomain = V2rayConfig.RoutingBean.RulesBean("", null, null, "")
                     rulesDomain.type = "field"
                     rulesDomain.outboundTag = tag
                     rulesDomain.domain = ArrayList<String>()
                     rulesDomain.domain?.add("geosite:$code")
-                    v2rayConfig.routing.settings.rules.add(rulesDomain)
+                    v2rayConfig.routing.rules.add(rulesDomain)
                 }
             }
         } catch (e: Exception) {
@@ -346,13 +347,13 @@ object V2rayConfigUtil {
         try {
             if (!TextUtils.isEmpty(userRule)) {
                 //Domain
-                val rulesDomain = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                val rulesDomain = V2rayConfig.RoutingBean.RulesBean("", null, null, "")
                 rulesDomain.type = "field"
                 rulesDomain.outboundTag = tag
                 rulesDomain.domain = ArrayList<String>()
 
                 //IP
-                val rulesIP = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                val rulesIP = V2rayConfig.RoutingBean.RulesBean("", null, null, "")
                 rulesIP.type = "field"
                 rulesIP.outboundTag = tag
                 rulesIP.ip = ArrayList<String>()
@@ -371,10 +372,10 @@ object V2rayConfigUtil {
                             }
                         }
                 if (rulesDomain.domain?.size!! > 0) {
-                    v2rayConfig.routing.settings.rules.add(rulesDomain)
+                    v2rayConfig.routing.rules.add(rulesDomain)
                 }
                 if (rulesIP.ip?.size!! > 0) {
-                    v2rayConfig.routing.settings.rules.add(rulesIP)
+                    v2rayConfig.routing.rules.add(rulesIP)
                 }
             }
         } catch (e: Exception) {

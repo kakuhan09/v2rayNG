@@ -34,6 +34,7 @@ class SettingsActivity : BaseActivity() {
 //        const val PREF_LANCONN_PORT = "pref_lanconn_port"
 //        const val PREF_SPEEDUP_DOMAIN = "pref_speedup_domain"
 
+        const val PREF_ROUTING_DOMAIN_STRATEGY = "pref_routing_domain_strategy"
         const val PREF_ROUTING_MODE = "pref_routing_mode"
         const val PREF_ROUTING = "pref_routing"
 //        const val PREF_DONATE = "pref_donate"
