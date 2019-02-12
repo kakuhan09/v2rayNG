@@ -98,6 +98,11 @@ object V2rayConfigUtil {
             val guid = vmess.guid
             val jsonConfig = app.defaultDPreference.getPrefString(AppConfig.ANG_CONFIG + guid, "")
 
+            val domainName = parseDomainName(jsonConfig)
+            if (!TextUtils.isEmpty(domainName)) {
+                app.defaultDPreference.setPrefString(AppConfig.PREF_CURR_CONFIG_DOMAIN, domainName)
+            }
+
             result.status = true
             result.content = jsonConfig
             return result
@@ -427,5 +432,57 @@ object V2rayConfigUtil {
         } catch (e: JSONException) {
             return false
         }
+    }
+
+    private fun parseDomainName(jsonConfig: String): String {
+        try {
+            val jObj = JSONObject(jsonConfig)
+            var domainName = ""
+            if (jObj.has("outbound")) {
+                domainName = parseDomainName(jObj.optJSONObject("outbound"))
+                if (!TextUtils.isEmpty(domainName)) {
+                    return domainName
+                }
+            }
+            if (jObj.has("outbounds")) {
+                for (i in 0..(jObj.optJSONArray("outbounds").length() - 1)) {
+                    domainName = parseDomainName(jObj.optJSONArray("outbounds").getJSONObject(i))
+                    if (!TextUtils.isEmpty(domainName)) {
+                        return domainName
+                    }
+                }
+            }
+            if (jObj.has("outboundDetour")) {
+                for (i in 0..(jObj.optJSONArray("outboundDetour").length() - 1)) {
+                    domainName = parseDomainName(jObj.optJSONArray("outboundDetour").getJSONObject(i))
+                    if (!TextUtils.isEmpty(domainName)) {
+                        return domainName
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    private fun parseDomainName(outbound: JSONObject): String {
+        try {
+            if (outbound.has("settings")
+                    || outbound.optJSONObject("settings").has("vnext")) {
+                val vnext = outbound.optJSONObject("settings").optJSONArray("vnext")
+                for (i in 0..(vnext.length() - 1)) {
+                    val item = vnext.getJSONObject(i)
+                    val address = item.getString("address")
+                    val port = item.getString("port")
+                    if (!Utils.isIpAddress(address)) {
+                        return String.format("%s:%s", address, port)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
     }
 }
