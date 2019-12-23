@@ -1,1 +1,1 @@
-include ':app', ':libv2ray', ':dpreference'
+include ':app', ':dpreference'

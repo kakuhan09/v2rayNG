@@ -1,6 +1,7 @@
 package com.v2ray.ang.dto
 
-data class VmessQRCode(var ps: String = "",
+data class VmessQRCode(var v: String = "",
+                       var ps: String = "",
                        var add: String = "",
                        var port: String = "",
                        var id: String = "",
@@ -8,4 +9,5 @@ data class VmessQRCode(var ps: String = "",
                        var net: String = "",
                        var type: String = "",
                        var host: String = "",
+                       var path: String = "",
                        var tls: String = "")

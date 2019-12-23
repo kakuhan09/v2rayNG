@@ -1,85 +1,142 @@
 package com.v2ray.ang.ui
 
 import android.Manifest
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
+import android.net.Uri
 import android.net.VpnService
-import android.os.*
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import com.tbruyelle.rxpermissions.RxPermissions
 import com.v2ray.ang.R
-import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.activity_main.*
-import org.jetbrains.anko.imageResource
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.toast
 import android.os.Bundle
+import android.text.TextUtils
+import android.view.KeyEvent
 import com.v2ray.ang.AppConfig
-import org.jetbrains.anko.startActivityForResult
+import com.v2ray.ang.util.MessageUtil
+import com.v2ray.ang.util.V2rayConfigUtil
+import org.jetbrains.anko.*
 import java.lang.ref.SoftReference
+import java.net.URL
+import android.content.IntentFilter
+import android.support.design.widget.NavigationView
+import android.support.v4.view.GravityCompat
+import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
+import com.v2ray.ang.InappBuyActivity
+import com.v2ray.ang.extension.defaultDPreference
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
+import com.v2ray.ang.helper.SimpleItemTouchHelperCallback
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     companion object {
         private const val REQUEST_CODE_VPN_PREPARE = 0
         private const val REQUEST_SCAN = 1
+        private const val REQUEST_FILE_CHOOSER = 2
+        private const val REQUEST_SCAN_URL = 3
     }
 
-    var fabChecked = false
+    var isRunning = false
         set(value) {
             field = value
             adapter.changeable = !value
             if (value) {
-                fab.imageResource = R.drawable.ic_fab_check
+                fab.imageResource = R.drawable.ic_v
+                tv_test_state.text = getString(R.string.connection_connected)
+                hideCircle()
             } else {
-                fab.imageResource = R.drawable.ic_fab_uncheck
+                fab.imageResource = R.drawable.ic_v_idle
+                tv_test_state.text = getString(R.string.connection_not_connected)
             }
         }
 
     private val adapter by lazy { MainRecyclerAdapter(this) }
+    private var mItemTouchHelper: ItemTouchHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        title = getString(R.string.title_server)
+        setSupportActionBar(toolbar)
 
         fab.setOnClickListener {
-            if (fabChecked) {
-                sendMsg(AppConfig.MSG_STATE_STOP, "")
+            if (isRunning) {
+                Utils.stopVService(this)
             } else {
                 val intent = VpnService.prepare(this)
-                if (intent == null)
+                if (intent == null) {
                     startV2Ray()
-                else
+                } else {
                     startActivityForResult(intent, REQUEST_CODE_VPN_PREPARE)
+                }
             }
         }
+        layout_test.setOnClickListener {
+                        if (isRunning) {
+                            val socksPort = 10808//Utils.parseInt(defaultDPreference.getPrefString(SettingsActivity.PREF_SOCKS_PORT, "10808"))
 
+                            tv_test_state.text = getString(R.string.connection_test_testing)
+                            doAsync {
+                                val result = Utils.testConnection(this@MainActivity, socksPort)
+                                uiThread {
+                                    tv_test_state.text = Utils.getEditable(result)
+                                }
+                            }
+                        } else {
+//                tv_test_state.text = getString(R.string.connection_test_fail)
+                        }
+        }
+
+        recycler_view.setHasFixedSize(true)
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.adapter = adapter
+
+        val callback = SimpleItemTouchHelperCallback(adapter)
+        mItemTouchHelper = ItemTouchHelper(callback)
+        mItemTouchHelper?.attachToRecyclerView(recycler_view)
+
+
+        val toggle = ActionBarDrawerToggle(
+                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
+        nav_view.setNavigationItemSelectedListener(this)
     }
 
     fun startV2Ray() {
-        if (AngConfigManager.genStoreV2rayConfig()) {
-            toast(R.string.toast_services_start)
-            V2RayVpnService.startV2Ray(this)
+        if (AngConfigManager.configs.index < 0) {
+            return
         }
+        showCircle()
+//        toast(R.string.toast_services_start)
+        Utils.startVService(this)
     }
 
     override fun onStart() {
         super.onStart()
-        val intent = Intent(this.applicationContext, V2RayVpnService::class.java)
-        intent.`package` = "com.v2ray.ang"
-        bindService(intent, mConnection, BIND_AUTO_CREATE)
+        isRunning = false
+
+//        val intent = Intent(this.applicationContext, V2RayVpnService::class.java)
+//        intent.`package` = AppConfig.ANG_PACKAGE
+//        bindService(intent, mConnection, BIND_AUTO_CREATE)
+
+        mMsgReceive = ReceiveMessageHandler(this@MainActivity)
+        registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY))
+        MessageUtil.sendMsg2Service(this, AppConfig.MSG_REGISTER_CLIENT, "")
     }
 
     override fun onStop() {
         super.onStop()
-
-        unbindService(mConnection)
+        if (mMsgReceive != null) {
+            unregisterReceiver(mMsgReceive)
+            mMsgReceive = null
+        }
     }
 
     public override fun onResume() {
@@ -87,20 +144,31 @@ class MainActivity : BaseActivity() {
         adapter.updateConfigList()
     }
 
+    public override fun onPause() {
+        super.onPause()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             REQUEST_CODE_VPN_PREPARE ->
-                startV2Ray()
+                if (resultCode == RESULT_OK) {
+                    startV2Ray()
+                }
             REQUEST_SCAN ->
-                importConfig(data?.getStringExtra("SCAN_RESULT"))
-//            IntentIntegrator.REQUEST_CODE -> {
-//                if (resultCode == RESULT_CANCELED) {
-//                } else {
-//                    val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-//                    importConfig(scanResult.contents)
-//                }
-//            }
+                if (resultCode == RESULT_OK) {
+                    importBatchConfig(data?.getStringExtra("SCAN_RESULT"))
+                }
+            REQUEST_FILE_CHOOSER -> {
+                if (resultCode == RESULT_OK) {
+                    val uri = data!!.data
+                    readContentFromUri(uri)
+                }
+            }
+            REQUEST_SCAN_URL ->
+                if (resultCode == RESULT_OK) {
+                    importConfigCustomUrl(data?.getStringExtra("SCAN_RESULT"))
+                }
         }
     }
 
@@ -111,50 +179,88 @@ class MainActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.import_qrcode -> {
-            importQRcode()
+            importQRcode(REQUEST_SCAN)
             true
         }
         R.id.import_clipboard -> {
             importClipboard()
             true
         }
-        R.id.import_manually -> {
-            startActivity<ServerActivity>("position" to -1, "isRunning" to fabChecked)
+        R.id.import_manually_vmess -> {
+            startActivity<ServerActivity>("position" to -1, "isRunning" to isRunning)
             adapter.updateConfigList()
             true
         }
-        R.id.settings -> {
-            startActivity<SettingsActivity>("isRunning" to fabChecked)
+        R.id.import_manually_ss -> {
+            startActivity<Server3Activity>("position" to -1, "isRunning" to isRunning)
+            adapter.updateConfigList()
             true
         }
+        R.id.import_config_custom_clipboard -> {
+            importConfigCustomClipboard()
+            true
+        }
+        R.id.import_config_custom_local -> {
+            importConfigCustomLocal()
+            true
+        }
+        R.id.import_config_custom_url -> {
+            importConfigCustomUrlClipboard()
+            true
+        }
+        R.id.import_config_custom_url_scan -> {
+            importQRcode(REQUEST_SCAN_URL)
+            true
+        }
+
+//        R.id.sub_setting -> {
+//            startActivity<SubSettingActivity>()
+//            true
+//        }
+
+        R.id.sub_update -> {
+            importConfigViaSub()
+            true
+        }
+
+        R.id.export_all -> {
+            if (AngConfigManager.shareAll2Clipboard() == 0) {
+                toast(R.string.toast_success)
+            } else {
+                toast(R.string.toast_failure)
+            }
+            true
+        }
+//        R.id.settings -> {
+//            startActivity<SettingsActivity>("isRunning" to isRunning)
+//            true
+//        }
+//        R.id.logcat -> {
+//            startActivity<LogcatActivity>()
+//            true
+//        }
         else -> super.onOptionsItemSelected(item)
     }
 
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
-
     /**
      * import config from qrcode
      */
-    fun importQRcode(): Boolean {
-        try {
-            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), REQUEST_SCAN)
-        } catch (e: Exception) {
-            RxPermissions.getInstance(this)
-                    .request(Manifest.permission.CAMERA)
-                    .subscribe {
-                        if (it)
-                            startActivityForResult<ScannerActivity>(REQUEST_SCAN)
-                        else
-                            toast(R.string.toast_permission_denied)
-                    }
-        }
-//        val integrator = IntentIntegrator(this)
-//        integrator.initiateScan(IntentIntegrator.ALL_CODE_TYPES)
+    fun importQRcode(requestCode: Int): Boolean {
+//        try {
+//            startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
+//                    .addCategory(Intent.CATEGORY_DEFAULT)
+//                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
+//        } catch (e: Exception) {
+        RxPermissions(this)
+                .request(Manifest.permission.CAMERA)
+                .subscribe {
+                    if (it)
+                        startActivityForResult<ScannerActivity>(requestCode)
+                    else
+                        toast(R.string.toast_permission_denied)
+                }
+//        }
         return true
     }
 
@@ -164,7 +270,7 @@ class MainActivity : BaseActivity() {
     fun importClipboard(): Boolean {
         try {
             val clipboard = Utils.getClipboard(this)
-            importConfig(clipboard)
+            importBatchConfig(clipboard)
         } catch (e: Exception) {
             e.printStackTrace()
             return false
@@ -172,11 +278,163 @@ class MainActivity : BaseActivity() {
         return true
     }
 
-    fun importConfig(server: String?) {
+    fun importBatchConfig(server: String?, subid: String = "") {
+        val count = AngConfigManager.importBatchConfig(server, subid)
+        if (count > 0) {
+            toast(R.string.toast_success)
+            adapter.updateConfigList()
+        } else {
+            toast(R.string.toast_failure)
+        }
+    }
+
+    fun importConfigCustomClipboard(): Boolean {
+        try {
+            val configText = Utils.getClipboard(this)
+            if (TextUtils.isEmpty(configText)) {
+                toast(R.string.toast_none_data_clipboard)
+                return false
+            }
+            importCustomizeConfig(configText)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    /**
+     * import config from local config file
+     */
+    fun importConfigCustomLocal(): Boolean {
+        try {
+            showFileChooser()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    fun importConfigCustomUrlClipboard(): Boolean {
+        try {
+            val url = Utils.getClipboard(this)
+            if (TextUtils.isEmpty(url)) {
+                toast(R.string.toast_none_data_clipboard)
+                return false
+            }
+            return importConfigCustomUrl(url)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    /**
+     * import config from url
+     */
+    fun importConfigCustomUrl(url: String?): Boolean {
+        try {
+            if (!Utils.isValidUrl(url)) {
+                toast(R.string.toast_invalid_url)
+                return false
+            }
+            doAsync {
+                val configText = URL(url).readText()
+                uiThread {
+                    importCustomizeConfig(configText)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * import config from sub
+     */
+    fun importConfigViaSub(): Boolean {
+        try {
+            toast(R.string.title_sub_update)
+            val subItem = AngConfigManager.configs.subItem
+            for (k in 0 until subItem.count()) {
+                if (TextUtils.isEmpty(subItem[k].id)
+                        || TextUtils.isEmpty(subItem[k].remarks)
+                        || TextUtils.isEmpty(subItem[k].url)
+                ) {
+                    continue
+                }
+                val id = subItem[k].id
+                val url = subItem[k].url
+                if (!Utils.isValidUrl(url)) {
+                    continue
+                }
+                Log.d("Main", url)
+                doAsync {
+                    val configText = URL(url).readText()
+                    uiThread {
+                        importBatchConfig(Utils.decode(configText), id)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * show file chooser
+     */
+    private fun showFileChooser() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "*/*"
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, getString(R.string.title_file_chooser)),
+                    REQUEST_FILE_CHOOSER)
+        } catch (ex: android.content.ActivityNotFoundException) {
+            toast(R.string.toast_require_file_manager)
+        }
+    }
+
+    /**
+     * read content from uri
+     */
+    private fun readContentFromUri(uri: Uri) {
+        RxPermissions(this)
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .subscribe {
+                    if (it) {
+                        try {
+                            val inputStream = contentResolver.openInputStream(uri)
+                            val configText = inputStream.bufferedReader().readText()
+                            importCustomizeConfig(configText)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    } else
+                        toast(R.string.toast_permission_denied)
+                }
+    }
+
+    /**
+     * import customize config
+     */
+    fun importCustomizeConfig(server: String?) {
         if (server == null) {
             return
         }
-        val resId = AngConfigManager.importConfig(server)
+        if (!V2rayConfigUtil.isValidConfig(server)) {
+            toast(R.string.toast_config_file_invalid)
+            return
+        }
+        val resId = AngConfigManager.importCustomizeConfig(server)
         if (resId > 0) {
             toast(resId)
         } else {
@@ -185,64 +443,97 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private var mMsgReceive: Messenger? = null
+//    val mConnection = object : ServiceConnection {
+//        override fun onServiceDisconnected(name: ComponentName?) {
+//        }
+//
+//        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+//            sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
+//        }
+//    }
 
-    private class ReceiveMessageHandler(activity: MainActivity) : Handler() {
+    private var mMsgReceive: BroadcastReceiver? = null
+
+    private class ReceiveMessageHandler(activity: MainActivity) : BroadcastReceiver() {
         internal var mReference: SoftReference<MainActivity> = SoftReference(activity)
-
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
+        override fun onReceive(ctx: Context?, intent: Intent?) {
             val activity = mReference.get()
-            when (msg.what) {
+            when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
-                    activity?.fabChecked = true
+                    activity?.isRunning = true
                 }
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
-                    activity?.fabChecked = false
+                    activity?.isRunning = false
                 }
                 AppConfig.MSG_STATE_START_SUCCESS -> {
-                    activity?.fabChecked = true
                     activity?.toast(R.string.toast_services_success)
+                    activity?.isRunning = true
                 }
                 AppConfig.MSG_STATE_START_FAILURE -> {
-                    activity?.fabChecked = false
                     activity?.toast(R.string.toast_services_failure)
+                    activity?.isRunning = false
                 }
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
-                    activity?.fabChecked = false
+                    activity?.isRunning = false
                 }
             }
         }
     }
 
-    private var mMsgSend: Messenger? = null
-    val mConnection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName?) {
-            mMsgSend = null
-            mMsgReceive = null
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            moveTaskToBack(false)
+            return true
         }
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            mMsgSend = Messenger(service)
-            mMsgReceive = Messenger(ReceiveMessageHandler(this@MainActivity))
-
-            sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
-        }
+        return super.onKeyDown(keyCode, event)
     }
 
-    fun sendMsg(what: Int, content: String) {
+    fun showCircle() {
+        fabProgressCircle?.show()
+    }
+
+    fun hideCircle() {
         try {
-            val msg = Message.obtain()
-            msg.replyTo = mMsgReceive
-            msg.what = what
-            val bundle = Bundle()
-            bundle.putString("key", content)
-            msg.data = bundle
-            mMsgSend?.send(msg)
+            Observable.timer(300, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        if (fabProgressCircle.isShown) {
+                            fabProgressCircle.hide()
+                        }
+                    }
         } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
+    override fun onBackPressed() {
+        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
+            drawer_layout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
+    }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Handle navigation view item clicks here.
+        when (item.itemId) {
+            //R.id.server_profile -> activityClass = MainActivity::class.java
+            R.id.sub_setting -> {
+                startActivity<SubSettingActivity>()
+            }
+            R.id.settings -> {
+                startActivity<SettingsActivity>("isRunning" to isRunning)
+            }
+            R.id.feedback -> {
+                Utils.openUri(this, "https://github.com/2dust/v2rayNG/issues")
+            }
+            R.id.donate -> {
+                startActivity<InappBuyActivity>()
+            }
+            R.id.logcat -> {
+                startActivity<LogcatActivity>()
+            }
+        }
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return true
+    }
 }

@@ -6,4 +6,10 @@
         android:icon="@drawable/ic_select_all_white_24dp"
         android:title="@string/menu_item_select_all"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/select_proxy_app"
+        android:icon="@drawable/ic_description_white_24dp"
+        android:title="@string/menu_item_select_proxy_app"
+        app:showAsAction="withText" />
 </menu>

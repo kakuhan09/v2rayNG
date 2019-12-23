@@ -15,14 +15,47 @@
                 android:title="@string/menu_item_import_config_clipboard"
                 app:showAsAction="never" />
             <item
-                android:id="@+id/import_manually"
-                android:title="@string/menu_item_import_config_manually"
+                android:id="@+id/import_manually_vmess"
+                android:title="@string/menu_item_import_config_manually_vmess"
                 app:showAsAction="never" />
+            <item
+                android:id="@+id/import_manually_ss"
+                android:title="@string/menu_item_import_config_manually_ss"
+                app:showAsAction="never" />
+
+            <item
+                android:icon="@drawable/ic_add_white_24dp"
+                android:title="@string/menu_item_import_config_custom"
+                app:showAsAction="always">
+                <menu>
+                    <item
+                        android:id="@+id/import_config_custom_clipboard"
+                        android:title="@string/menu_item_import_config_custom_clipboard"
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/import_config_custom_local"
+                        android:title="@string/menu_item_import_config_custom_local"
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/import_config_custom_url"
+                        android:title="@string/menu_item_import_config_custom_url"
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/import_config_custom_url_scan"
+                        android:title="@string/menu_item_import_config_custom_url_scan"
+                        app:showAsAction="never" />
+                </menu>
+            </item>
         </menu>
     </item>
     <item
-        android:id="@+id/settings"
-        android:icon="@drawable/ic_settings_white_24dp"
-        android:title="@string/title_settings"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/export_all"
+        android:icon="@drawable/ic_share_white_24dp"
+        android:title="@string/title_export_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/sub_update"
+        android:icon="@drawable/ic_subscriptions_white_24dp"
+        android:title="@string/title_sub_update"
+        app:showAsAction="never" />
 </menu>
